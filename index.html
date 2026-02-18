@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Quiz - Neural Network Nerd Edition</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1 class="title glitch" data-text="LLM QUIZ">LLM QUIZ</h1>
+            <p class="subtitle">Neural Network Nerd Edition</p>
+            <p class="tagline">"In a world where transformers aren't just robots..."</p>
+            <button id="start-btn" class="neon-btn">
+                <span>Initialize Quiz Protocol</span>
+            </button>
+        </div>
+
+        <!-- Player Setup Screen -->
+        <div id="setup-screen" class="screen hidden">
+            <h2 class="setup-title">REGISTER OPERATIVES</h2>
+            <p class="setup-subtitle">Enter player names to initialize multiplayer protocol</p>
+            <div id="player-inputs" class="player-inputs">
+                <div class="player-input-row">
+                    <label class="player-label">P1</label>
+                    <input type="text" class="player-name-input" placeholder="Player 1 handle..." maxlength="16" />
+                </div>
+                <div class="player-input-row">
+                    <label class="player-label">P2</label>
+                    <input type="text" class="player-name-input" placeholder="Player 2 handle..." maxlength="16" />
+                </div>
+            </div>
+            <div class="setup-controls">
+                <button id="add-player-btn" class="neon-btn neon-btn-small"><span>+ Add Operative</span></button>
+                <button id="remove-player-btn" class="neon-btn neon-btn-small neon-btn-red hidden"><span>- Remove Operative</span></button>
+            </div>
+            <button id="begin-game-btn" class="neon-btn"><span>Launch Protocol</span></button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="screen hidden">
+            <div class="hud">
+                <div class="progress-display">
+                    <span class="label">PROGRESS</span>
+                    <span id="progress" class="value">1/20</span>
+                </div>
+                <div class="turn-display">
+                    <span class="label">CURRENT OPERATIVE</span>
+                    <span id="current-player" class="value current-player-name">---</span>
+                </div>
+                <div class="turn-progress-display">
+                    <span class="label">TURN</span>
+                    <span id="turn-progress" class="value">1/4</span>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="category-badge" id="category">LLM Basics</div>
+                <div class="difficulty-badge" id="difficulty">EASY</div>
+                <p id="question-text" class="question-text">Loading question...</p>
+            </div>
+
+            <div id="answers-container" class="answers-container">
+                <button class="answer-btn" data-index="0"></button>
+                <button class="answer-btn" data-index="1"></button>
+                <button class="answer-btn" data-index="2"></button>
+                <button class="answer-btn" data-index="3"></button>
+            </div>
+
+            <button id="pass-btn" class="neon-btn neon-btn-orange hidden">
+                <span>PASS // Skip Turn</span>
+            </button>
+
+            <div id="question-summary" class="question-summary hidden">
+                <h3 class="summary-title">TURN ANALYSIS</h3>
+                <div id="summary-correct-answer" class="summary-correct-answer"></div>
+                <div id="summary-results" class="summary-results"></div>
+                <div id="summary-points" class="summary-points"></div>
+            </div>
+
+            <button id="next-btn" class="neon-btn hidden">
+                <span>Next Query →</span>
+            </button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen hidden">
+            <h2 class="results-title">ANALYSIS COMPLETE</h2>
+            <div id="leaderboard" class="leaderboard"></div>
+            <p id="results-message" class="results-message"></p>
+            <button id="restart-btn" class="neon-btn">
+                <span>Reinitialize System</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

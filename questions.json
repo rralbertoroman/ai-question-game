@@ -1,0 +1,244 @@
+{
+  "questions": [
+    {
+      "question": "What does the 'T' in GPT stand for?",
+      "answers": [
+        "Transformer",
+        "Training",
+        "Turing",
+        "Tensor"
+      ],
+      "correct": 0,
+      "difficulty": "easy",
+      "category": "LLM Basics"
+    },
+    {
+      "question": "An LLM generates a detailed biography of a person who never existed, complete with dates and citations. This phenomenon is called:",
+      "answers": [
+        "Hallucination",
+        "Overfitting",
+        "Catastrophic forgetting",
+        "Mode collapse"
+      ],
+      "correct": 0,
+      "difficulty": "easy",
+      "category": "LLM Basics"
+    },
+    {
+      "question": "Which of these is NOT a real step in training a modern LLM like ChatGPT?",
+      "answers": [
+        "Symbolic logic compilation",
+        "Pre-training on large text corpora",
+        "Supervised fine-tuning",
+        "Reinforcement learning from human feedback"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Training"
+    },
+    {
+      "question": "The 2017 paper 'Attention Is All You Need' eliminated the need for which previously dominant architecture?",
+      "answers": [
+        "Recurrent neural networks",
+        "Convolutional neural networks",
+        "Generative adversarial networks",
+        "Boltzmann machines"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Architecture"
+    },
+    {
+      "question": "You set an LLM's temperature to 0. What behavior should you expect?",
+      "answers": [
+        "Nearly deterministic output — the model picks the most likely token each time",
+        "The model refuses to generate any output",
+        "Maximum creativity with highly varied responses",
+        "Faster inference speed but lower accuracy"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Prompting"
+    },
+    {
+      "question": "A model has 70 billion parameters. What are those parameters, fundamentally?",
+      "answers": [
+        "Numerical weights learned during training",
+        "The number of texts in its training dataset",
+        "Configuration settings chosen by engineers",
+        "The number of unique tokens it can process"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Architecture"
+    },
+    {
+      "question": "You give an LLM two example translations, then ask it to translate a new sentence. This technique is called:",
+      "answers": [
+        "Few-shot prompting",
+        "Transfer learning",
+        "Fine-tuning",
+        "Data augmentation"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Prompting"
+    },
+    {
+      "question": "What problem does Retrieval-Augmented Generation (RAG) primarily solve?",
+      "answers": [
+        "Grounding LLM responses in up-to-date or domain-specific information",
+        "Reducing the number of parameters in the model",
+        "Speeding up token generation during inference",
+        "Preventing the model from generating toxic content"
+      ],
+      "correct": 0,
+      "difficulty": "hard",
+      "category": "Architecture"
+    },
+    {
+      "question": "If a model's context window is 128K tokens, which of these is a real limitation?",
+      "answers": [
+        "It cannot reference information from beyond that window in a single session",
+        "It can only be trained on datasets up to 128K tokens",
+        "It can only generate responses of 128K tokens or fewer",
+        "It needs 128K GPUs to run inference"
+      ],
+      "correct": 0,
+      "difficulty": "easy",
+      "category": "LLM Basics"
+    },
+    {
+      "question": "Quantizing a model from 16-bit to 4-bit floating point primarily trades off:",
+      "answers": [
+        "Precision for reduced memory usage and faster inference",
+        "Speed for higher accuracy",
+        "Training time for larger context windows",
+        "Safety alignment for better reasoning"
+      ],
+      "correct": 0,
+      "difficulty": "hard",
+      "category": "Architecture"
+    },
+    {
+      "question": "In the RLHF pipeline, what is the role of the reward model?",
+      "answers": [
+        "It scores model outputs to reflect human preferences",
+        "It generates the initial pre-training data",
+        "It decides which parameters to update during backpropagation",
+        "It filters out copyrighted content from responses"
+      ],
+      "correct": 0,
+      "difficulty": "hard",
+      "category": "Training"
+    },
+    {
+      "question": "Why does multi-head attention use multiple attention 'heads' rather than a single one?",
+      "answers": [
+        "Each head can learn to attend to different types of relationships in the data",
+        "It allows the model to process multiple languages simultaneously",
+        "It enables parallel training across multiple GPUs",
+        "It provides redundancy in case one head produces errors"
+      ],
+      "correct": 0,
+      "difficulty": "hard",
+      "category": "Architecture"
+    },
+    {
+      "question": "Which organization published the original Transformer paper?",
+      "answers": [
+        "Google",
+        "OpenAI",
+        "Meta",
+        "DeepMind"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "AI History"
+    },
+    {
+      "question": "A sentence embedding converts text into a vector. Two sentences with similar meaning would have vectors that are:",
+      "answers": [
+        "Close together in the vector space",
+        "Exactly identical",
+        "Perpendicular to each other",
+        "Of equal magnitude but opposite direction"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Architecture"
+    },
+    {
+      "question": "What distinguishes fine-tuning from prompt engineering?",
+      "answers": [
+        "Fine-tuning updates the model's weights; prompt engineering only changes the input",
+        "Prompt engineering is permanent; fine-tuning is temporary",
+        "Fine-tuning works on any model; prompt engineering requires API access",
+        "There is no meaningful difference — they achieve the same result"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Training"
+    },
+    {
+      "question": "ChatGPT was released to the public in late 2022. Which underlying model powered its initial launch?",
+      "answers": [
+        "GPT-3.5",
+        "GPT-4",
+        "GPT-3",
+        "GPT-2"
+      ],
+      "correct": 0,
+      "difficulty": "easy",
+      "category": "AI History"
+    },
+    {
+      "question": "A tokenizer splits 'unhappiness' into ['un', 'happiness']. Why do LLMs use subword tokenization rather than whole words?",
+      "answers": [
+        "It balances vocabulary size with the ability to handle rare and novel words",
+        "It makes the model run faster by reducing input length",
+        "Whole-word tokenization was patented by Google",
+        "Subwords are easier for the attention mechanism to process"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "Training"
+    },
+    {
+      "question": "Which of these tasks would be HARDEST for a standard autoregressive LLM without tool use?",
+      "answers": [
+        "Reliably performing multi-step arithmetic on large numbers",
+        "Summarizing a long article",
+        "Translating English to French",
+        "Writing a poem in iambic pentameter"
+      ],
+      "correct": 0,
+      "difficulty": "medium",
+      "category": "LLM Basics"
+    },
+    {
+      "question": "In the phrase 'The bank was steep,' an LLM determines 'bank' means a riverbank, not a financial institution. Which mechanism is most responsible?",
+      "answers": [
+        "Self-attention over surrounding context tokens",
+        "A built-in dictionary lookup table",
+        "The tokenizer assigning a different token ID",
+        "A separate disambiguation module"
+      ],
+      "correct": 0,
+      "difficulty": "hard",
+      "category": "Architecture"
+    },
+    {
+      "question": "What is the key difference between an LLM and a traditional search engine?",
+      "answers": [
+        "An LLM generates novel text; a search engine retrieves existing documents",
+        "A search engine uses neural networks; an LLM uses keyword matching",
+        "An LLM can only work offline; a search engine requires the internet",
+        "There is no fundamental difference — LLMs are just faster search engines"
+      ],
+      "correct": 0,
+      "difficulty": "easy",
+      "category": "LLM Basics"
+    }
+  ]
+}
