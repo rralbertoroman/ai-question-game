@@ -33,17 +33,23 @@ docker-compose up -d  # Start PostgreSQL
 ```
 app/                      # Next.js App Router
   api/auth/               # Auth API routes (login, register, logout, session)
+  api/rooms/              # Room & game API routes (CRUD, join, ready, start, answer, results, finish, retire)
   (auth)/                 # Auth pages layout group (login, register)
-  page.tsx                # Home page (protected)
-components/auth/          # LoginForm, RegisterForm (client components)
+  rooms/[roomId]/play/    # Game play page
+  rooms/[roomId]/results/ # Game results page
+  page.tsx                # Home page (protected, shows room list)
+components/
+  auth/                   # LoginForm, RegisterForm, LogoutButton (client components)
+  game/                   # GamePlay, QuestionPhase, SummaryPhase, FinishedPhase, TimerDisplay, ProgressBar, Leaderboard, ResultsView
+  rooms/                  # RoomList, RoomCard, CreateRoomButton
 lib/
-  auth/                   # Auth logic (session.ts, password.ts, lucia.ts)
+  auth/                   # Auth logic (simple-session.ts, password.ts)
   db/                     # Database (index.ts = connection, schema.ts = tables)
+  game/                   # Game logic (engine.ts, config.ts, types.ts)
   utils/validation.ts     # Zod schemas for registration/login
 scripts/                  # seed-questions.ts, test-db-connection.ts
 drizzle/                  # Migration files
 middleware.ts             # Route protection (cookie check)
-docs/                     # Phase implementation docs
 ```
 
 ## Database
@@ -55,9 +61,19 @@ Schema defined in `lib/db/schema.ts`. Tables: users, sessions, rooms, roomPartic
 - Questions have difficulty (easy/medium/hard) and category fields
 - Game state tracks phases: waiting → question → summary → finished
 
+## Game Architecture
+
+- **Game engine** (`lib/game/engine.ts`): Core logic for initializing games, submitting answers, and resolving game state transitions
+- **Game config** (`lib/game/config.ts`): Constants — 10 questions per game, 30s question timer, 8s summary phase
+- **Game phases:** waiting → question → summary → finished (loops question/summary per question)
+- **Scoring:** Stored as integer×10 (e.g., 3.5 points = 35) for precision without floats
+- **Room flow:** Create room → players join → players vote ready → admin starts → gameplay → results
+- **Room statuses:** closed | open | playing | finished
+- **10 API routes** under `app/api/rooms/`: room CRUD, join, ready, start, answer, game state, results, finish, retire
+
 ## Key Architecture Decisions
 
-- **Session management:** Direct implementation in `lib/auth/session.ts` (not Lucia — Lucia config exists but `session.ts` handles sessions directly with Drizzle)
+- **Session management:** Direct implementation in `lib/auth/simple-session.ts` using Drizzle (custom session handling, no external auth library)
 - **Middleware:** Cookie-presence check only; full DB validation happens server-side via `validateRequest()`
 - **Path aliases:** `@/*` maps to project root
 - **DB connection:** Global singleton pattern in dev to prevent connection exhaustion

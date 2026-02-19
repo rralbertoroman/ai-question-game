@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { validateRequest } from '@/lib/auth/session';
+import { validateRequest } from '@/lib/auth/simple-session';
 
 export const metadata: Metadata = {
   title: 'Authentication - LLM Quiz Game',

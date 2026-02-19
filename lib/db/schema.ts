@@ -49,6 +49,7 @@ export const roomParticipants = pgTable('room_participants', {
   id: serial('id').primaryKey(),
   roomId: varchar('room_id', { length: 21 }).notNull().references(() => rooms.id, { onDelete: 'cascade' }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  ready: boolean('ready').notNull().default(false),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 }, (table) => ({
   roomUserIdx: index('room_participant_idx').on(table.roomId, table.userId),

@@ -1,0 +1,573 @@
+import { db } from '@/lib/db';
+import {
+  rooms,
+  roomParticipants,
+  gameStates,
+  questions,
+  playerAnswers,
+  scores,
+  users,
+} from '@/lib/db/schema';
+import { eq, and, sql, count, inArray } from 'drizzle-orm';
+import { GAME_CONFIG } from './config';
+import type {
+  GameStateResponse,
+  LeaderboardEntry,
+  PlayerQuestionResult,
+} from './types';
+
+// ============================================
+// QUESTION SELECTION
+// ============================================
+
+export async function selectQuestionsForGame(
+  count: number = GAME_CONFIG.QUESTIONS_PER_GAME
+): Promise<number[]> {
+  const allQuestions = await db
+    .select({ id: questions.id })
+    .from(questions);
+
+  const ids = allQuestions.map((q) => q.id);
+
+  // Fisher-Yates shuffle
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+
+  return ids.slice(0, Math.min(count, ids.length));
+}
+
+// ============================================
+// GAME INITIALIZATION
+// ============================================
+
+export async function initializeGame(roomId: string): Promise<void> {
+  const questionOrder = await selectQuestionsForGame();
+
+  const participants = await db
+    .select({ userId: roomParticipants.userId })
+    .from(roomParticipants)
+    .where(eq(roomParticipants.roomId, roomId));
+
+  if (participants.length < 2) {
+    throw new Error('Need at least 2 participants to start');
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(rooms)
+      .set({ status: 'playing' })
+      .where(eq(rooms.id, roomId));
+
+    await tx.insert(gameStates).values({
+      roomId,
+      currentQuestionIndex: 0,
+      questionOrder,
+      questionStartTime: new Date(),
+      phase: 'question',
+    });
+
+    await tx.insert(scores).values(
+      participants.map((p) => ({
+        roomId,
+        userId: p.userId,
+        score: 0,
+      }))
+    );
+  });
+}
+
+// ============================================
+// SCORING
+// ============================================
+
+export function calculatePoints(
+  isCorrect: boolean,
+  elapsedSeconds: number
+): number {
+  if (!isCorrect) return 0;
+  const base = GAME_CONFIG.POINTS_CORRECT * 10;
+  const bonusFraction = Math.max(
+    0,
+    1 - elapsedSeconds / GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS
+  );
+  const bonus = Math.round(
+    GAME_CONFIG.POINTS_SPEED_BONUS_MAX * 10 * bonusFraction
+  );
+  return base + bonus;
+}
+
+// ============================================
+// ANSWER SUBMISSION
+// ============================================
+
+export async function submitAnswer(
+  roomId: string,
+  userId: number,
+  answerIndex: number
+): Promise<{ isCorrect: boolean; pointsAwarded: number }> {
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState || gameState.phase !== 'question') {
+    throw new Error('Not in question phase');
+  }
+
+  const questionOrder = gameState.questionOrder as number[];
+  const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
+
+  // Check if already answered
+  const existing = await db.query.playerAnswers.findFirst({
+    where: and(
+      eq(playerAnswers.roomId, roomId),
+      eq(playerAnswers.userId, userId),
+      eq(playerAnswers.questionId, currentQuestionId)
+    ),
+  });
+
+  if (existing) {
+    throw new Error('Already answered this question');
+  }
+
+  // Check time limit
+  const elapsed =
+    (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
+  if (elapsed > GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS) {
+    throw new Error('Time expired');
+  }
+
+  // Get the question
+  const question = await db.query.questions.findFirst({
+    where: eq(questions.id, currentQuestionId),
+  });
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const isCorrect = answerIndex === question.correctIndex;
+  const pointsAwarded = calculatePoints(isCorrect, elapsed);
+
+  await db.transaction(async (tx) => {
+    await tx.insert(playerAnswers).values({
+      roomId,
+      userId,
+      questionId: currentQuestionId,
+      answerIndex,
+      isCorrect,
+    });
+
+    if (pointsAwarded > 0) {
+      await tx
+        .update(scores)
+        .set({ score: sql`${scores.score} + ${pointsAwarded}`, updatedAt: new Date() })
+        .where(and(eq(scores.roomId, roomId), eq(scores.userId, userId)));
+    }
+  });
+
+  // Check if all players answered — if so, transition to summary
+  await checkAndTransitionToSummary(roomId);
+
+  return { isCorrect, pointsAwarded };
+}
+
+// ============================================
+// STATE RESOLUTION (LAZY EVALUATION)
+// ============================================
+
+async function checkAndTransitionToSummary(roomId: string): Promise<void> {
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState || gameState.phase !== 'question') return;
+
+  const questionOrder = gameState.questionOrder as number[];
+  const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
+
+  const [participantCount] = await db
+    .select({ count: count() })
+    .from(roomParticipants)
+    .where(eq(roomParticipants.roomId, roomId));
+
+  const [answerCount] = await db
+    .select({ count: count() })
+    .from(playerAnswers)
+    .where(
+      and(
+        eq(playerAnswers.roomId, roomId),
+        eq(playerAnswers.questionId, currentQuestionId)
+      )
+    );
+
+  if (answerCount.count >= participantCount.count) {
+    await db
+      .update(gameStates)
+      .set({
+        phase: 'summary',
+        questionStartTime: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(gameStates.roomId, roomId));
+  }
+}
+
+async function handleTimeExpiry(roomId: string): Promise<void> {
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState || gameState.phase !== 'question') return;
+
+  const elapsed =
+    (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
+  if (elapsed <= GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS) return;
+
+  const questionOrder = gameState.questionOrder as number[];
+  const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
+
+  if (currentQuestionId === undefined) {
+    // Index out of bounds — transition to finished
+    await db.transaction(async (tx) => {
+      await tx
+        .update(gameStates)
+        .set({ phase: 'finished', updatedAt: new Date() })
+        .where(eq(gameStates.roomId, roomId));
+      await tx
+        .update(rooms)
+        .set({ status: 'finished' })
+        .where(eq(rooms.id, roomId));
+    });
+    return;
+  }
+
+  // Get participants who haven't answered
+  const participants = await db
+    .select({ userId: roomParticipants.userId })
+    .from(roomParticipants)
+    .where(eq(roomParticipants.roomId, roomId));
+
+  const answered = await db
+    .select({ userId: playerAnswers.userId })
+    .from(playerAnswers)
+    .where(
+      and(
+        eq(playerAnswers.roomId, roomId),
+        eq(playerAnswers.questionId, currentQuestionId)
+      )
+    );
+
+  const answeredUserIds = new Set(answered.map((a) => a.userId));
+  const unanswered = participants.filter((p) => !answeredUserIds.has(p.userId));
+
+  await db.transaction(async (tx) => {
+    // Insert timeout answers for non-responders
+    if (unanswered.length > 0) {
+      await tx.insert(playerAnswers).values(
+        unanswered.map((p) => ({
+          roomId,
+          userId: p.userId,
+          questionId: currentQuestionId,
+          answerIndex: null,
+          isCorrect: false,
+        }))
+      );
+    }
+
+    // Transition to summary
+    await tx
+      .update(gameStates)
+      .set({
+        phase: 'summary',
+        questionStartTime: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(gameStates.roomId, roomId));
+  });
+}
+
+async function handleSummaryExpiry(roomId: string): Promise<void> {
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState || gameState.phase !== 'summary') return;
+
+  const elapsed =
+    (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
+  if (elapsed <= GAME_CONFIG.SUMMARY_DISPLAY_SECONDS) return;
+
+  const questionOrder = gameState.questionOrder as number[];
+  const nextIndex = gameState.currentQuestionIndex + 1;
+
+  if (nextIndex >= questionOrder.length) {
+    // Game finished
+    await db.transaction(async (tx) => {
+      await tx
+        .update(gameStates)
+        .set({ phase: 'finished', updatedAt: new Date() })
+        .where(eq(gameStates.roomId, roomId));
+
+      await tx
+        .update(rooms)
+        .set({ status: 'finished' })
+        .where(eq(rooms.id, roomId));
+    });
+  } else {
+    // Next question
+    await db
+      .update(gameStates)
+      .set({
+        currentQuestionIndex: nextIndex,
+        phase: 'question',
+        questionStartTime: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(gameStates.roomId, roomId));
+  }
+}
+
+// ============================================
+// RESOLVE GAME STATE (main polling handler)
+// ============================================
+
+export async function resolveGameState(
+  roomId: string,
+  userId: number
+): Promise<GameStateResponse> {
+  // Trigger any pending transitions
+  await handleTimeExpiry(roomId);
+  await handleSummaryExpiry(roomId);
+
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState) {
+    throw new Error('Game not found');
+  }
+
+  const room = await db.query.rooms.findFirst({
+    where: eq(rooms.id, roomId),
+  });
+
+  if (!room) {
+    throw new Error('Room not found');
+  }
+
+  const questionOrder = gameState.questionOrder as number[];
+  const leaderboard = await getLeaderboard(roomId);
+
+  const base: GameStateResponse = {
+    roomId,
+    roomName: room.name,
+    phase: gameState.phase as GameStateResponse['phase'],
+    currentQuestionIndex: gameState.currentQuestionIndex,
+    totalQuestions: questionOrder.length,
+    timeRemainingMs: 0,
+    leaderboard,
+  };
+
+  if (gameState.phase === 'question') {
+    const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
+    const question = await db.query.questions.findFirst({
+      where: eq(questions.id, currentQuestionId),
+    });
+
+    const elapsed =
+      (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
+    const timeRemainingMs = Math.max(
+      0,
+      (GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS - elapsed) * 1000
+    );
+
+    const existingAnswer = await db.query.playerAnswers.findFirst({
+      where: and(
+        eq(playerAnswers.roomId, roomId),
+        eq(playerAnswers.userId, userId),
+        eq(playerAnswers.questionId, currentQuestionId)
+      ),
+    });
+
+    const [participantCount] = await db
+      .select({ count: count() })
+      .from(roomParticipants)
+      .where(eq(roomParticipants.roomId, roomId));
+
+    const [answerCount] = await db
+      .select({ count: count() })
+      .from(playerAnswers)
+      .where(
+        and(
+          eq(playerAnswers.roomId, roomId),
+          eq(playerAnswers.questionId, currentQuestionId)
+        )
+      );
+
+    return {
+      ...base,
+      timeRemainingMs,
+      question: question
+        ? {
+            id: question.id,
+            text: question.questionText,
+            answers: question.answers as string[],
+            difficulty: question.difficulty,
+            category: question.category,
+          }
+        : undefined,
+      hasAnswered: !!existingAnswer,
+      selectedAnswerIndex: existingAnswer?.answerIndex ?? null,
+      answeredCount: answerCount.count,
+      totalPlayers: participantCount.count,
+    };
+  }
+
+  if (gameState.phase === 'summary') {
+    const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
+    const question = await db.query.questions.findFirst({
+      where: eq(questions.id, currentQuestionId),
+    });
+
+    const elapsed =
+      (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
+    const timeRemainingMs = Math.max(
+      0,
+      (GAME_CONFIG.SUMMARY_DISPLAY_SECONDS - elapsed) * 1000
+    );
+
+    const answers = await db
+      .select({
+        userId: playerAnswers.userId,
+        username: users.username,
+        answerIndex: playerAnswers.answerIndex,
+        isCorrect: playerAnswers.isCorrect,
+      })
+      .from(playerAnswers)
+      .innerJoin(users, eq(playerAnswers.userId, users.id))
+      .where(
+        and(
+          eq(playerAnswers.roomId, roomId),
+          eq(playerAnswers.questionId, currentQuestionId)
+        )
+      );
+
+    // Calculate points awarded for display
+    const playerResults: PlayerQuestionResult[] = answers.map((a) => {
+      const playerScore = leaderboard.find((l) => l.userId === a.userId);
+      return {
+        userId: a.userId,
+        username: a.username,
+        answerIndex: a.answerIndex,
+        isCorrect: a.isCorrect,
+        pointsAwarded: 0, // We don't track per-question points separately; show correctness
+      };
+    });
+
+    return {
+      ...base,
+      timeRemainingMs,
+      summary: question
+        ? {
+            questionText: question.questionText,
+            answers: question.answers as string[],
+            correctIndex: question.correctIndex,
+            playerResults,
+          }
+        : undefined,
+    };
+  }
+
+  // 'finished' or 'waiting'
+  return base;
+}
+
+// ============================================
+// LEADERBOARD
+// ============================================
+
+export async function getLeaderboard(
+  roomId: string
+): Promise<LeaderboardEntry[]> {
+  const results = await db
+    .select({
+      userId: scores.userId,
+      username: users.username,
+      score: scores.score,
+    })
+    .from(scores)
+    .innerJoin(users, eq(scores.userId, users.id))
+    .where(eq(scores.roomId, roomId))
+    .orderBy(sql`${scores.score} DESC`);
+
+  return results.map((r, i) => ({
+    userId: r.userId,
+    username: r.username,
+    score: r.score,
+    rank: i + 1,
+  }));
+}
+
+// ============================================
+// GAME RESULTS
+// ============================================
+
+export async function getGameResults(roomId: string) {
+  const gameState = await db.query.gameStates.findFirst({
+    where: eq(gameStates.roomId, roomId),
+  });
+
+  if (!gameState) throw new Error('Game not found');
+
+  const questionOrder = gameState.questionOrder as number[];
+  const leaderboard = await getLeaderboard(roomId);
+
+  // Get all questions for this game
+  const gameQuestions = questionOrder.length > 0
+    ? await db
+        .select()
+        .from(questions)
+        .where(inArray(questions.id, questionOrder))
+    : [];
+
+  // Get all answers for this game
+  const allAnswers = await db
+    .select({
+      userId: playerAnswers.userId,
+      username: users.username,
+      questionId: playerAnswers.questionId,
+      answerIndex: playerAnswers.answerIndex,
+      isCorrect: playerAnswers.isCorrect,
+    })
+    .from(playerAnswers)
+    .innerJoin(users, eq(playerAnswers.userId, users.id))
+    .where(eq(playerAnswers.roomId, roomId));
+
+  const questionsWithAnswers = questionOrder.map((qId, index) => {
+    const q = gameQuestions.find((gq) => gq.id === qId);
+    const qAnswers = allAnswers.filter((a) => a.questionId === qId);
+    return {
+      index,
+      questionId: qId,
+      questionText: q?.questionText ?? '',
+      answers: (q?.answers as string[]) ?? [],
+      correctIndex: q?.correctIndex ?? 0,
+      difficulty: q?.difficulty ?? '',
+      category: q?.category ?? '',
+      playerResults: qAnswers.map((a) => ({
+        userId: a.userId,
+        username: a.username,
+        answerIndex: a.answerIndex,
+        isCorrect: a.isCorrect,
+      })),
+    };
+  });
+
+  return {
+    leaderboard,
+    questions: questionsWithAnswers,
+    phase: gameState.phase,
+  };
+}
