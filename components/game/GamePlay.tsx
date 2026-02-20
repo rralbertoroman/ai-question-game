@@ -63,15 +63,15 @@ export default function GamePlay({ roomId, userId }: Props) {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-        <div className="text-gray-400 animate-pulse">Loading game...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 flex items-center justify-center">
+        <div className="text-gray-400 animate-glow-pulse">Loading game...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4 sm:p-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 p-4 sm:p-8">
+      <div className="max-w-2xl mx-auto animate-fade-in-up">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-white">{gameState.roomName}</h1>

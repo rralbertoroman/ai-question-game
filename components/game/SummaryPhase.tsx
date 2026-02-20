@@ -20,7 +20,7 @@ const answerLabels = ['A', 'B', 'C', 'D'];
 
 export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
   return (
-    <div>
+    <div className="animate-fade-in-up">
       <TimerDisplay
         serverTimeRemainingMs={timeRemainingMs}
         totalSeconds={GAME_CONFIG.SUMMARY_DISPLAY_SECONDS}
@@ -59,14 +59,15 @@ export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
           Results
         </h3>
         <div className="space-y-2">
-          {summary.playerResults.map((result) => {
+          {summary.playerResults.map((result, index) => {
             const isCorrect = result.isCorrect;
             const timedOut = result.answerIndex === null;
 
             return (
               <div
                 key={result.userId}
-                className="flex items-center justify-between text-sm"
+                className="flex items-center justify-between text-sm animate-stagger-in"
+                style={{ '--i': index } as React.CSSProperties}
               >
                 <span className="text-gray-300">{result.username}</span>
                 <span>

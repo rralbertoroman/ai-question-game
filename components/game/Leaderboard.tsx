@@ -18,7 +18,7 @@ export default function Leaderboard({ entries, currentUserId }: Props) {
         Leaderboard
       </h3>
       <div className="space-y-2">
-        {entries.map((entry) => {
+        {entries.map((entry, index) => {
           const isMe = entry.userId === currentUserId;
           const rankColors: Record<number, string> = {
             1: 'text-yellow-400',
@@ -30,11 +30,12 @@ export default function Leaderboard({ entries, currentUserId }: Props) {
           return (
             <div
               key={entry.userId}
-              className={`flex items-center gap-3 p-2 rounded ${
+              className={`flex items-center gap-3 p-2 rounded card-hover-lift animate-stagger-in ${
                 isMe
                   ? 'bg-cyan-500/10 border border-cyan-500/30'
                   : 'bg-gray-800/50'
               }`}
+              style={{ '--i': index } as React.CSSProperties}
             >
               <span
                 className={`font-mono font-bold w-6 text-center ${rankColor}`}

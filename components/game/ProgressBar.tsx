@@ -20,7 +20,7 @@ export default function ProgressBar({ current, total }: Props) {
       </div>
       <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
         <div
-          className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-500 ease-out rounded-full"
+          className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-500 ease-out rounded-full progress-bar-shimmer"
           style={{ width: `${fraction * 100}%` }}
         />
       </div>

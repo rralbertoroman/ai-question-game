@@ -20,11 +20,20 @@ export default function FinishedPhase({
   const isWinner = winner?.userId === currentUserId;
 
   return (
-    <div className="text-center">
-      <h2 className="text-3xl font-bold text-cyan-400 mb-2">Game Over</h2>
+    <div className="text-center animate-fade-in-up">
+      {/* Confetti celebration */}
+      <div className="confetti-container">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="confetti-piece" />
+        ))}
+      </div>
+
+      <h2 className="text-3xl font-bold text-gradient-animated animate-glow-pulse mb-2">
+        Challenge Complete
+      </h2>
 
       {winner && (
-        <p className="text-lg text-gray-300 mb-8">
+        <p className="text-lg text-gray-300 mb-8 animate-trophy-bounce">
           {isWinner ? (
             <span className="text-yellow-400">You won!</span>
           ) : (
@@ -41,7 +50,7 @@ export default function FinishedPhase({
 
       {/* Podium */}
       <div className="space-y-2 mb-8 max-w-md mx-auto">
-        {leaderboard.map((entry) => {
+        {leaderboard.map((entry, index) => {
           const isMe = entry.userId === currentUserId;
           const medalColors: Record<number, string> = {
             1: 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(255,200,0,0.15)]',
@@ -57,9 +66,10 @@ export default function FinishedPhase({
           return (
             <div
               key={entry.userId}
-              className={`flex items-center gap-4 p-4 rounded-lg border ${
+              className={`flex items-center gap-4 p-4 rounded-lg border card-hover-lift animate-stagger-in ${
                 medalColors[entry.rank] || 'border-gray-700 bg-gray-800/50'
               } ${isMe ? 'ring-1 ring-cyan-400' : ''}`}
+              style={{ '--i': index } as React.CSSProperties}
             >
               <span className="text-2xl w-10 text-center">
                 {medalEmojis[entry.rank] || `#${entry.rank}`}

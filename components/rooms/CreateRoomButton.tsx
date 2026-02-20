@@ -52,7 +52,7 @@ export default function CreateRoomButton() {
   }
 
   return (
-    <div className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg">
+    <div className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg animate-fade-in-up">
       <h3 className="text-lg font-semibold text-white mb-4">Create New Room</h3>
 
       {error && (
@@ -68,7 +68,7 @@ export default function CreateRoomButton() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. LLM Challenge Round 1"
+            placeholder="e.g. AI Challenge Round 1"
             required
             minLength={3}
             maxLength={100}

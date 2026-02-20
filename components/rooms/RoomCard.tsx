@@ -79,7 +79,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
   };
 
   return (
-    <div className="p-5 bg-gray-800/50 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors">
+    <div className="p-5 bg-gray-800/50 border border-gray-700 rounded-lg hover:border-gray-600 card-hover-lift">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>

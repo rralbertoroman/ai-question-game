@@ -42,8 +42,8 @@ export default function ResultsView({
   const winner = leaderboard[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4 sm:p-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 p-4 sm:p-8">
+      <div className="max-w-3xl mx-auto animate-fade-in-up">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">{roomName}</h1>
@@ -63,7 +63,7 @@ export default function ResultsView({
             Final Standings
           </h2>
           <div className="space-y-2">
-            {leaderboard.map((entry) => {
+            {leaderboard.map((entry, index) => {
               const isMe = entry.userId === currentUserId;
               const medalColors: Record<number, string> = {
                 1: 'border-yellow-500 bg-yellow-500/10',
@@ -74,9 +74,10 @@ export default function ResultsView({
               return (
                 <div
                   key={entry.userId}
-                  className={`flex items-center gap-4 p-4 rounded-lg border ${
+                  className={`flex items-center gap-4 p-4 rounded-lg border card-hover-lift animate-stagger-in ${
                     medalColors[entry.rank] || 'border-gray-700 bg-gray-800/50'
                   } ${isMe ? 'ring-1 ring-cyan-400' : ''}`}
+                  style={{ '--i': index } as React.CSSProperties}
                 >
                   <span className="font-mono font-bold text-lg w-8 text-center text-gray-400">
                     #{entry.rank}
@@ -104,10 +105,11 @@ export default function ResultsView({
             Question Breakdown
           </h2>
           <div className="space-y-4">
-            {results.questions.map((q) => (
+            {results.questions.map((q, index) => (
               <div
                 key={q.questionId}
-                className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg"
+                className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg animate-stagger-in"
+                style={{ '--i': index } as React.CSSProperties}
               >
                 <div className="flex items-start justify-between mb-2">
                   <p className="text-sm text-white flex-1">

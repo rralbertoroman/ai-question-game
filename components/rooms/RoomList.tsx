@@ -57,13 +57,18 @@ export default function RoomList({ initialRooms, currentUser }: Props) {
 
   return (
     <div className="grid gap-4">
-      {rooms.map((room) => (
-        <RoomCard
+      {rooms.map((room, index) => (
+        <div
           key={room.id}
-          room={room}
-          currentUser={currentUser}
-          onUpdate={fetchRooms}
-        />
+          className="animate-stagger-in"
+          style={{ '--i': index } as React.CSSProperties}
+        >
+          <RoomCard
+            room={room}
+            currentUser={currentUser}
+            onUpdate={fetchRooms}
+          />
+        </div>
       ))}
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import TimerDisplay from './TimerDisplay';
 import { GAME_CONFIG } from '@/lib/game/config';
+import { NeuralNetworkIcon } from '@/components/icons';
 
 interface Question {
   id: number;
@@ -48,7 +49,7 @@ export default function QuestionPhase({
   };
 
   return (
-    <div>
+    <div className="animate-fade-in-up">
       <TimerDisplay
         serverTimeRemainingMs={timeRemainingMs}
         totalSeconds={GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS}
@@ -59,7 +60,8 @@ export default function QuestionPhase({
         <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-cyan-500" />
         <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-cyan-500" />
 
-        <div className="flex gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3">
+          <NeuralNetworkIcon size={16} className="text-purple-400 shrink-0" />
           <span className="text-xs px-2 py-0.5 rounded border bg-blue-500/20 text-blue-400 border-blue-500/50">
             {question.category}
           </span>
@@ -83,14 +85,14 @@ export default function QuestionPhase({
           if (hasAnswered) {
             if (isSelected) {
               btnClass +=
-                'bg-cyan-500/20 border-cyan-500 text-white shadow-[0_0_15px_rgba(0,255,255,0.2)]';
+                'bg-cyan-500/20 border-cyan-500 text-white answer-glow-selected';
             } else {
               btnClass +=
                 'bg-gray-800/50 border-gray-700 text-gray-500 cursor-not-allowed';
             }
           } else {
             btnClass +=
-              'bg-gray-800/50 border-gray-700 text-white hover:border-cyan-500 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(0,255,255,0.1)]';
+              'bg-gray-800/50 border-gray-700 text-white card-hover-lift hover:border-cyan-500 hover:bg-cyan-500/10 hover:shadow-[0_0_15px_rgba(0,255,255,0.1)]';
           }
 
           return (
