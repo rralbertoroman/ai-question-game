@@ -18,7 +18,8 @@ declare global {
 let queryClient: ReturnType<typeof postgres>;
 
 if (process.env.NODE_ENV === 'production') {
-  queryClient = postgres(process.env.DATABASE_URL);
+  // Neon pooled connections (via PgBouncer) require prepare: false
+  queryClient = postgres(process.env.DATABASE_URL, { prepare: false });
 } else {
   if (!globalThis.__queryClient) {
     globalThis.__queryClient = postgres(process.env.DATABASE_URL);
