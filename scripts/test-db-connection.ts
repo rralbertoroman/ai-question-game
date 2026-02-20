@@ -18,7 +18,7 @@ async function testConnection() {
     const sessionCount = await db.select().from(sessions);
     console.log(`✓ Found ${sessionCount.length} sessions`);
 
-    // Test the exact join query Lucia uses
+    // Test session-user join query
     const sessionId = '3cjsg7hejc34g7vi4sqq2nflpiupmmohfoplgyym';
     const joinResult = await db
       .select()

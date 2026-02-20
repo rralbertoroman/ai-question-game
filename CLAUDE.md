@@ -84,7 +84,6 @@ Schema defined in `lib/db/schema.ts`. Tables: users, sessions, rooms, roomPartic
 Defined in `.env.local` (see `.env.example` for template):
 - `DATABASE_URL` — PostgreSQL connection string
 - `POSTGRES_PASSWORD` — Database password
-- `SESSION_SECRET` — Session signing secret
 
 ## Coding Conventions
 

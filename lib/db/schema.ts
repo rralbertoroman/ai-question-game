@@ -17,7 +17,7 @@ export const users = pgTable('users', {
 }));
 
 // ============================================
-// SESSIONS TABLE (for Lucia)
+// SESSIONS TABLE
 // ============================================
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),

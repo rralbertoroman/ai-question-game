@@ -105,13 +105,6 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 /**
- * Delete all sessions for a user
- */
-export async function deleteUserSessions(userId: number): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
-}
-
-/**
  * Set session cookie
  */
 export async function setSessionCookie(sessionId: string, expiresAt: Date): Promise<void> {
