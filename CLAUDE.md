@@ -33,14 +33,16 @@ docker-compose up -d  # Start PostgreSQL
 ```
 app/                      # Next.js App Router
   api/auth/               # Auth API routes (login, register, logout, session)
-  api/rooms/              # Room & game API routes (CRUD, join, ready, start, answer, results, finish, retire)
+  api/rooms/              # Room & game API routes (CRUD, join, ready, start, answer, results, finish, retire, SSE stream)
   (auth)/                 # Auth pages layout group (login, register)
   rooms/[roomId]/play/    # Game play page
   rooms/[roomId]/results/ # Game results page
+  rooms/[roomId]/supervise/ # Admin-only live game monitoring (read-only)
   page.tsx                # Home page (protected, shows room list)
 components/
   auth/                   # LoginForm, RegisterForm, LogoutButton (client components)
-  game/                   # GamePlay, QuestionPhase, SummaryPhase, FinishedPhase, TimerDisplay, ProgressBar, Leaderboard, ResultsView
+  game/                   # GamePlay, QuestionPhase, SummaryPhase, FinishedPhase, TimerDisplay, ProgressBar, Leaderboard, ResultsView, AdminSupervision
+  hooks/                  # useGameSSE (SSE streaming), usePolling (visibility-aware polling)
   rooms/                  # RoomList, RoomCard, CreateRoomButton
 lib/
   auth/                   # Auth logic (simple-session.ts, password.ts)
@@ -63,13 +65,16 @@ Schema defined in `lib/db/schema.ts`. Tables: users, sessions, rooms, roomPartic
 
 ## Game Architecture
 
-- **Game engine** (`lib/game/engine.ts`): Core logic for initializing games, submitting answers, and resolving game state transitions
-- **Game config** (`lib/game/config.ts`): Constants — 10 questions per game, 30s question timer, 8s summary phase
+- **Game engine** (`lib/game/engine.ts`): Core logic for initializing games, submitting answers, resolving game state transitions; includes `resolveGameStateForAdmin()` for admin-specific state
+- **Game config** (`lib/game/config.ts`): Constants — 10 questions per game, 30s question timer, 8s summary phase, 2s SSE poll interval
 - **Game phases:** waiting → question → summary → finished (loops question/summary per question)
+- **Real-time updates:** SSE stream at `/api/rooms/[roomId]/game/stream` replaces polling; server polls DB and pushes only on state change
+- **Optimistic UI:** QuestionPhase applies answer selection styling immediately on click before server confirmation
+- **Admin supervision:** Read-only live game monitoring at `/rooms/[roomId]/supervise` for admin users
 - **Scoring:** Stored as integer×10 (e.g., 3.5 points = 35) for precision without floats
 - **Room flow:** Create room → players join → players vote ready → admin starts → gameplay → results
 - **Room statuses:** closed | open | playing | finished
-- **10 API routes** under `app/api/rooms/`: room CRUD, join, ready, start, answer, game state, results, finish, retire
+- **11 API routes** under `app/api/rooms/`: room CRUD, join, ready, start, answer, game state, SSE stream, results, finish, retire
 
 ## Key Architecture Decisions
 
@@ -78,6 +83,8 @@ Schema defined in `lib/db/schema.ts`. Tables: users, sessions, rooms, roomPartic
 - **Path aliases:** `@/*` maps to project root
 - **DB connection:** Global singleton pattern in dev to prevent connection exhaustion
 - **Docker PostgreSQL:** Runs on port 5433 externally (5432 internally)
+- **SSE for game state:** Server-sent events stream replaces client-side polling for lower latency; server polls DB at configurable interval (`SSE_POLL_INTERVAL_MS`) and only pushes when state changes
+- **Optimistic UI:** Answer submission shows immediate visual feedback; server confirms asynchronously
 
 ## Environment Variables
 

@@ -25,7 +25,7 @@ export default function GamePlay({ roomId, userId }: Props) {
 
   const error = submitError || sseError;
 
-  const handleSubmitAnswer = async (answerIndex: number) => {
+  const handleSubmitAnswer = async (answerIndex: number): Promise<boolean> => {
     try {
       const res = await fetch(`/api/rooms/${roomId}/game/answer`, {
         method: 'POST',
@@ -35,9 +35,12 @@ export default function GamePlay({ roomId, userId }: Props) {
 
       if (res.ok) {
         await refetch();
+        return true;
       }
+      return false;
     } catch {
       setSubmitError('Failed to submit answer');
+      return false;
     }
   };
 
