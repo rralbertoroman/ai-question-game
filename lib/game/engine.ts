@@ -10,6 +10,12 @@ import {
 } from '@/lib/db/schema';
 import { eq, and, sql, count, inArray } from 'drizzle-orm';
 import { GAME_CONFIG } from './config';
+import {
+  getShufflePermutation,
+  shuffleAnswers,
+  originalToShuffled,
+  shuffledToOriginal,
+} from './shuffle';
 import type {
   GameStateResponse,
   QuestionState,
@@ -149,7 +155,11 @@ export async function submitAnswer(
     throw new Error('Question not found');
   }
 
-  const isCorrect = answerIndex === question.correctIndex;
+  // Un-shuffle the player's answer from display space back to original DB space
+  const permutation = getShufflePermutation(currentQuestionId, roomId);
+  const originalAnswerIndex = shuffledToOriginal(answerIndex, permutation);
+
+  const isCorrect = originalAnswerIndex === question.correctIndex;
   const pointsAwarded = calculatePoints(isCorrect, elapsed);
 
   await db.transaction(async (tx) => {
@@ -157,7 +167,7 @@ export async function submitAnswer(
       roomId,
       userId,
       questionId: currentQuestionId,
-      answerIndex,
+      answerIndex: originalAnswerIndex,
       isCorrect,
     });
 
@@ -378,6 +388,8 @@ export async function resolveGameState(
 
     if (!question) throw new Error('Question not found');
 
+    const permutation = getShufflePermutation(currentQuestionId, roomId);
+
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
     const timeRemainingMs = Math.max(
@@ -415,12 +427,14 @@ export async function resolveGameState(
       question: {
         id: question.id,
         text: question.questionText,
-        answers: question.answers as string[],
+        answers: shuffleAnswers(question.answers as string[], permutation),
         difficulty: question.difficulty,
         category: question.category,
       },
       hasAnswered: !!existingAnswer,
-      selectedAnswerIndex: existingAnswer?.answerIndex ?? null,
+      selectedAnswerIndex: existingAnswer?.answerIndex != null
+        ? originalToShuffled(existingAnswer.answerIndex, permutation)
+        : null,
       answeredCount: answerCount.count,
       totalPlayers: participantCount.count,
     } satisfies QuestionState;
@@ -433,6 +447,8 @@ export async function resolveGameState(
     });
 
     if (!question) throw new Error('Question not found');
+
+    const permutation = getShufflePermutation(currentQuestionId, roomId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -460,7 +476,9 @@ export async function resolveGameState(
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,
       username: a.username,
-      answerIndex: a.answerIndex,
+      answerIndex: a.answerIndex != null
+        ? originalToShuffled(a.answerIndex, permutation)
+        : null,
       isCorrect: a.isCorrect,
       pointsAwarded: 0,
     }));
@@ -471,8 +489,8 @@ export async function resolveGameState(
       timeRemainingMs,
       summary: {
         questionText: question.questionText,
-        answers: question.answers as string[],
-        correctIndex: question.correctIndex,
+        answers: shuffleAnswers(question.answers as string[], permutation),
+        correctIndex: originalToShuffled(question.correctIndex, permutation),
         playerResults,
       },
     } satisfies SummaryState;
@@ -526,6 +544,8 @@ export async function resolveGameStateForAdmin(
 
     if (!question) throw new Error('Question not found');
 
+    const permutation = getShufflePermutation(currentQuestionId, roomId);
+
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
     const timeRemainingMs = Math.max(
@@ -555,7 +575,7 @@ export async function resolveGameStateForAdmin(
       question: {
         id: question.id,
         text: question.questionText,
-        answers: question.answers as string[],
+        answers: shuffleAnswers(question.answers as string[], permutation),
         difficulty: question.difficulty,
         category: question.category,
       },
@@ -573,6 +593,8 @@ export async function resolveGameStateForAdmin(
     });
 
     if (!question) throw new Error('Question not found');
+
+    const permutation = getShufflePermutation(currentQuestionId, roomId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -600,7 +622,9 @@ export async function resolveGameStateForAdmin(
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,
       username: a.username,
-      answerIndex: a.answerIndex,
+      answerIndex: a.answerIndex != null
+        ? originalToShuffled(a.answerIndex, permutation)
+        : null,
       isCorrect: a.isCorrect,
       pointsAwarded: 0,
     }));
@@ -611,8 +635,8 @@ export async function resolveGameStateForAdmin(
       timeRemainingMs,
       summary: {
         questionText: question.questionText,
-        answers: question.answers as string[],
-        correctIndex: question.correctIndex,
+        answers: shuffleAnswers(question.answers as string[], permutation),
+        correctIndex: originalToShuffled(question.correctIndex, permutation),
         playerResults,
       },
     } satisfies SummaryState;
@@ -689,18 +713,23 @@ export async function getGameResults(roomId: string) {
   const questionsWithAnswers = questionOrder.map((qId, index) => {
     const q = gameQuestions.find((gq) => gq.id === qId);
     const qAnswers = allAnswers.filter((a) => a.questionId === qId);
+
+    const permutation = getShufflePermutation(qId, roomId);
+
     return {
       index,
       questionId: qId,
       questionText: q?.questionText ?? '',
-      answers: (q?.answers as string[]) ?? [],
-      correctIndex: q?.correctIndex ?? 0,
+      answers: q ? shuffleAnswers(q.answers as string[], permutation) : [],
+      correctIndex: q ? originalToShuffled(q.correctIndex, permutation) : 0,
       difficulty: q?.difficulty ?? '',
       category: q?.category ?? '',
       playerResults: qAnswers.map((a) => ({
         userId: a.userId,
         username: a.username,
-        answerIndex: a.answerIndex,
+        answerIndex: a.answerIndex != null
+          ? originalToShuffled(a.answerIndex, permutation)
+          : null,
         isCorrect: a.isCorrect,
       })),
     };
