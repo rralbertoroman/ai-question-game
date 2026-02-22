@@ -195,15 +195,32 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
               </button>
             )}
             {isAdmin && (
-              <button
-                onClick={() => doAction('finish')}
-                disabled={loading !== null}
-                className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading === 'finish' ? 'Finishing...' : 'End Game'}
-              </button>
+              <>
+                <button
+                  onClick={() => router.push(`/rooms/${room.id}/supervise`)}
+                  className="px-4 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors cursor-pointer"
+                >
+                  Supervise
+                </button>
+                <button
+                  onClick={() => doAction('finish')}
+                  disabled={loading !== null}
+                  className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading === 'finish' ? 'Finishing...' : 'End Game'}
+                </button>
+              </>
             )}
           </>
+        )}
+
+        {room.status === 'finished' && isAdmin && (
+          <button
+            onClick={() => router.push(`/rooms/${room.id}/results`)}
+            className="px-4 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors cursor-pointer"
+          >
+            Review Results
+          </button>
         )}
 
         {/* Admin delete - always available */}

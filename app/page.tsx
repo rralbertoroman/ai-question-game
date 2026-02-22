@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { validateRequest } from '@/lib/auth/simple-session';
 import { db } from '@/lib/db';
 import { rooms } from '@/lib/db/schema';
-import { ne } from 'drizzle-orm';
+import { ne, eq } from 'drizzle-orm';
 import RoomList from '@/components/rooms/RoomList';
 import CreateRoomButton from '@/components/rooms/CreateRoomButton';
 import LogoutButton from '@/components/auth/LogoutButton';
@@ -26,6 +26,21 @@ export default async function Home() {
   });
 
   const isAdmin = user.role === 'admin';
+
+  let finishedRooms: typeof allRooms = [];
+  if (isAdmin) {
+    finishedRooms = await db.query.rooms.findMany({
+      where: eq(rooms.status, 'finished'),
+      with: {
+        participants: {
+          with: { user: { columns: { id: true, username: true } } },
+        },
+        admin: { columns: { id: true, username: true } },
+      },
+      orderBy: (rooms, { desc }) => [desc(rooms.createdAt)],
+      limit: 20,
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 p-4 sm:p-8">
@@ -55,6 +70,7 @@ export default async function Home() {
 
         <RoomList
           initialRooms={JSON.parse(JSON.stringify(allRooms))}
+          initialFinishedRooms={JSON.parse(JSON.stringify(finishedRooms))}
           currentUser={{
             id: user.id,
             role: user.role,

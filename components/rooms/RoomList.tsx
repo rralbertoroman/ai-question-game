@@ -23,11 +23,14 @@ interface Room {
 
 interface Props {
   initialRooms: Room[];
+  initialFinishedRooms?: Room[];
   currentUser: { id: number; role: string; username: string };
 }
 
-export default function RoomList({ initialRooms, currentUser }: Props) {
+export default function RoomList({ initialRooms, initialFinishedRooms = [], currentUser }: Props) {
   const [rooms, setRooms] = useState<Room[]>(initialRooms);
+  const [finishedRooms, setFinishedRooms] = useState<Room[]>(initialFinishedRooms);
+  const isAdmin = currentUser.role === 'admin';
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -35,6 +38,9 @@ export default function RoomList({ initialRooms, currentUser }: Props) {
       if (res.ok) {
         const data = await res.json();
         setRooms(data.rooms);
+        if (data.finishedRooms) {
+          setFinishedRooms(data.finishedRooms);
+        }
       }
     } catch {
       // Silently retry on next interval
@@ -47,7 +53,7 @@ export default function RoomList({ initialRooms, currentUser }: Props) {
     return () => clearInterval(interval);
   }, [fetchRooms]);
 
-  if (rooms.length === 0) {
+  if (rooms.length === 0 && finishedRooms.length === 0) {
     return (
       <p className="text-gray-500 text-center py-12">
         No rooms available yet.
@@ -56,20 +62,45 @@ export default function RoomList({ initialRooms, currentUser }: Props) {
   }
 
   return (
-    <div className="grid gap-4">
-      {rooms.map((room, index) => (
-        <div
-          key={room.id}
-          className="animate-stagger-in"
-          style={{ '--i': index } as React.CSSProperties}
-        >
-          <RoomCard
-            room={room}
-            currentUser={currentUser}
-            onUpdate={fetchRooms}
-          />
+    <>
+      {rooms.length > 0 && (
+        <div className="grid gap-4">
+          {rooms.map((room, index) => (
+            <div
+              key={room.id}
+              className="animate-stagger-in"
+              style={{ '--i': index } as React.CSSProperties}
+            >
+              <RoomCard
+                room={room}
+                currentUser={currentUser}
+                onUpdate={fetchRooms}
+              />
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+
+      {isAdmin && finishedRooms.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-400 mb-4">Finished Games</h2>
+          <div className="grid gap-4">
+            {finishedRooms.map((room, index) => (
+              <div
+                key={room.id}
+                className="animate-stagger-in"
+                style={{ '--i': index } as React.CSSProperties}
+              >
+                <RoomCard
+                  room={room}
+                  currentUser={currentUser}
+                  onUpdate={fetchRooms}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

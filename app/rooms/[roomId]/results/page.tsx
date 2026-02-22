@@ -30,7 +30,7 @@ export default async function ResultsPage({ params }: Props) {
     ),
   });
 
-  if (!participant) redirect('/');
+  if (!participant && user.role !== 'admin') redirect('/');
 
   const results = await getGameResults(roomId);
   const leaderboard = await getLeaderboard(roomId);
