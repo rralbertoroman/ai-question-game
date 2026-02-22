@@ -74,7 +74,7 @@ export function apiHandler(
         }
 
         ctx.room = room;
-      } else if (props) {
+      } else if (props?.params) {
         // Even without room: true, extract roomId if params exist
         const { roomId } = await props.params;
         ctx.roomId = roomId;
