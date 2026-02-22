@@ -66,7 +66,7 @@ Schema defined in `lib/db/schema.ts`. Tables: users, sessions, rooms, roomPartic
 ## Game Architecture
 
 - **Game engine** (`lib/game/engine.ts`): Core logic for initializing games, submitting answers, resolving game state transitions; includes `resolveGameStateForAdmin()` for admin-specific state
-- **Game config** (`lib/game/config.ts`): Constants — 10 questions per game, 30s question timer, 8s summary phase, 2s SSE poll interval
+- **Game config** (`lib/game/config.ts`): Constants — 10 questions per game, 20s question timer, 8s summary phase, 2s SSE poll interval
 - **Game phases:** waiting → question → summary → finished (loops question/summary per question)
 - **Real-time updates:** SSE stream at `/api/rooms/[roomId]/game/stream` replaces polling; server polls DB and pushes only on state change
 - **Optimistic UI:** QuestionPhase applies answer selection styling immediately on click before server confirmation
