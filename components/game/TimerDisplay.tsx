@@ -47,7 +47,7 @@ export default function TimerDisplay({
     <div className="mb-4">
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs text-gray-500 uppercase tracking-wider">
-          Time
+          Tiempo
         </span>
         <span className={`text-2xl font-mono font-bold ${colorClass}`}>
           {seconds}s

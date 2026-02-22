@@ -61,7 +61,7 @@ export async function initializeGame(roomId: string): Promise<void> {
     .where(eq(roomParticipants.roomId, roomId));
 
   if (participants.length < 2) {
-    throw new Error('Need at least 2 participants to start');
+    throw new Error('Se necesitan al menos 2 participantes para iniciar');
   }
 
   await db.transaction(async (tx) => {
@@ -122,7 +122,7 @@ export async function submitAnswer(
   });
 
   if (!gameState || gameState.phase !== 'question') {
-    throw new Error('Not in question phase');
+    throw new Error('No está en fase de pregunta');
   }
 
   const questionOrder = gameState.questionOrder as number[];
@@ -132,14 +132,14 @@ export async function submitAnswer(
   const existing = await findPlayerAnswer(roomId, userId, currentQuestionId);
 
   if (existing) {
-    throw new Error('Already answered this question');
+    throw new Error('Ya respondiste esta pregunta');
   }
 
   // Check time limit
   const elapsed =
     (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
   if (elapsed > GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS) {
-    throw new Error('Time expired');
+    throw new Error('Tiempo agotado');
   }
 
   // Get the question
@@ -148,7 +148,7 @@ export async function submitAnswer(
   });
 
   if (!question) {
-    throw new Error('Question not found');
+    throw new Error('Pregunta no encontrada');
   }
 
   // Un-shuffle the player's answer from display space back to original DB space
@@ -342,7 +342,7 @@ export async function resolveGameState(
   });
 
   if (!gameState) {
-    throw new Error('Game not found');
+    throw new Error('Juego no encontrado');
   }
 
   const room = await db.query.rooms.findFirst({
@@ -350,7 +350,7 @@ export async function resolveGameState(
   });
 
   if (!room) {
-    throw new Error('Room not found');
+    throw new Error('Sala no encontrada');
   }
 
   const questionOrder = gameState.questionOrder as number[];
@@ -370,7 +370,7 @@ export async function resolveGameState(
       where: eq(questions.id, currentQuestionId),
     });
 
-    if (!question) throw new Error('Question not found');
+    if (!question) throw new Error('Pregunta no encontrada');
 
     const permutation = getShufflePermutation(currentQuestionId, roomId);
 
@@ -411,7 +411,7 @@ export async function resolveGameState(
       where: eq(questions.id, currentQuestionId),
     });
 
-    if (!question) throw new Error('Question not found');
+    if (!question) throw new Error('Pregunta no encontrada');
 
     const permutation = getShufflePermutation(currentQuestionId, roomId);
 
@@ -468,13 +468,13 @@ export async function resolveGameStateForAdmin(
     where: eq(gameStates.roomId, roomId),
   });
 
-  if (!gameState) throw new Error('Game not found');
+  if (!gameState) throw new Error('Juego no encontrado');
 
   const room = await db.query.rooms.findFirst({
     where: eq(rooms.id, roomId),
   });
 
-  if (!room) throw new Error('Room not found');
+  if (!room) throw new Error('Sala no encontrada');
 
   const questionOrder = gameState.questionOrder as number[];
   const leaderboard = await getLeaderboard(roomId);
@@ -493,7 +493,7 @@ export async function resolveGameStateForAdmin(
       where: eq(questions.id, currentQuestionId),
     });
 
-    if (!question) throw new Error('Question not found');
+    if (!question) throw new Error('Pregunta no encontrada');
 
     const permutation = getShufflePermutation(currentQuestionId, roomId);
 
@@ -531,7 +531,7 @@ export async function resolveGameStateForAdmin(
       where: eq(questions.id, currentQuestionId),
     });
 
-    if (!question) throw new Error('Question not found');
+    if (!question) throw new Error('Pregunta no encontrada');
 
     const permutation = getShufflePermutation(currentQuestionId, roomId);
 
@@ -609,7 +609,7 @@ export async function getGameResults(roomId: string) {
     where: eq(gameStates.roomId, roomId),
   });
 
-  if (!gameState) throw new Error('Game not found');
+  if (!gameState) throw new Error('Juego no encontrado');
 
   const questionOrder = gameState.questionOrder as number[];
   const leaderboard = await getLeaderboard(roomId);

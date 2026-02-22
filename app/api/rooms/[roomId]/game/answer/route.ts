@@ -20,9 +20,9 @@ export const POST = apiHandler(
     } catch (error) {
       if (error instanceof Error) {
         if (
-          error.message === 'Already answered this question' ||
-          error.message === 'Time expired' ||
-          error.message === 'Not in question phase'
+          error.message === 'Ya respondiste esta pregunta' ||
+          error.message === 'Tiempo agotado' ||
+          error.message === 'No está en fase de pregunta'
         ) {
           conflict(error.message);
         }

@@ -32,7 +32,7 @@ export default function PasswordInput({ id, value, onChange, placeholder, requir
         type="button"
         onClick={() => setVisible(!visible)}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
-        title={visible ? 'Hide password' : 'Show password'}
+        title={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
       >
         {visible ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
       </button>

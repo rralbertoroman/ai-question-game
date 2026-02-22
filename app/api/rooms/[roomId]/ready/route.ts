@@ -11,7 +11,7 @@ export const POST = apiHandler(
   { auth: 'user', room: true, participant: true },
   async (ctx) => {
     if (ctx.room!.status !== 'open') {
-      conflict('Room is not open');
+      conflict('La sala no está abierta');
     }
 
     // Toggle ready state

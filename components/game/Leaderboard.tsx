@@ -15,7 +15,7 @@ export default function Leaderboard({ entries, currentUserId }: Props) {
   return (
     <div className="mt-6">
       <h3 className="text-sm text-gray-500 uppercase tracking-wider mb-3">
-        Leaderboard
+        Clasificación
       </h3>
       <div className="space-y-2">
         {entries.map((entry, index) => {

@@ -7,13 +7,13 @@ export const POST = apiHandler(
   { auth: 'admin', room: true },
   async (ctx) => {
     if (ctx.room!.status !== 'open') {
-      conflict('Room is not open');
+      conflict('La sala no está abierta');
     }
 
     try {
       await initializeGame(ctx.roomId!);
     } catch (error) {
-      if (error instanceof Error && error.message === 'Need at least 2 participants to start') {
+      if (error instanceof Error && error.message === 'Se necesitan al menos 2 participantes para iniciar') {
         badRequest(error.message);
       }
       throw error;

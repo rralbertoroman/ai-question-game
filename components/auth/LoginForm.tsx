@@ -15,7 +15,7 @@ export default function LoginForm() {
   const redirect = searchParams.get('redirect') || '/';
 
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [generalError, setGeneralError] = useState('');
@@ -54,7 +54,7 @@ export default function LoginForm() {
         if (data.details) {
           setFromZodIssues(data.details);
         } else {
-          setGeneralError(data.error || 'Login failed');
+          setGeneralError(data.error || 'Error al iniciar sesión');
         }
         return;
       }
@@ -62,7 +62,7 @@ export default function LoginForm() {
       router.push(redirect);
       router.refresh();
     } catch {
-      setGeneralError('Network error. Please try again.');
+      setGeneralError('Error de red. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -73,25 +73,25 @@ export default function LoginForm() {
       <InlineError message={generalError} onDismiss={() => setGeneralError('')} />
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-          Email
+        <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
+          Nombre de usuario
         </label>
         <input
-          id="email"
+          id="username"
           type="text"
-          value={formData.email}
-          onChange={(e) => handleChange('email', e.target.value)}
+          value={formData.username}
+          onChange={(e) => handleChange('username', e.target.value)}
           className={`w-full px-4 py-2 bg-gray-800 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white ${
-            fieldErrors.email ? 'border-red-500' : 'border-gray-700'
+            fieldErrors.username ? 'border-red-500' : 'border-gray-700'
           }`}
           required
         />
-        <FieldError error={fieldErrors.email} />
+        <FieldError error={fieldErrors.username} />
       </div>
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-          Password
+          Contraseña
         </label>
         <PasswordInput
           id="password"
@@ -108,13 +108,13 @@ export default function LoginForm() {
         disabled={loading}
         className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-semibold py-3 rounded transition-colors cursor-pointer"
       >
-        {loading ? 'Signing In...' : 'Sign In'}
+        {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </button>
 
       <p className="text-center text-gray-400 text-sm">
-        Don&apos;t have an account?{' '}
+        ¿No tienes cuenta?{' '}
         <Link href="/register" className="text-cyan-500 hover:text-cyan-400">
-          Register
+          Registrarse
         </Link>
       </p>
     </form>

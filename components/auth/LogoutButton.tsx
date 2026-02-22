@@ -16,7 +16,7 @@ export default function LogoutButton() {
       router.push('/login');
       router.refresh();
     } catch {
-      addToast('error', 'Failed to log out. Please try again.');
+      addToast('error', 'Error al cerrar sesión. Por favor, inténtalo de nuevo.');
       setLoading(false);
     }
   };
@@ -27,7 +27,7 @@ export default function LogoutButton() {
       disabled={loading}
       className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
     >
-      {loading ? 'Logging out...' : 'Logout'}
+      {loading ? 'Cerrando sesión...' : 'Cerrar sesión'}
     </button>
   );
 }

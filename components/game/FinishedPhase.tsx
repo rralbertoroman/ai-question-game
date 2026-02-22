@@ -29,20 +29,20 @@ export default function FinishedPhase({
       </div>
 
       <h2 className="text-3xl font-bold text-gradient-animated animate-glow-pulse mb-2">
-        Challenge Complete
+        Desafío Completado
       </h2>
 
       {winner && (
         <p className="text-lg text-gray-300 mb-8 animate-trophy-bounce">
           {isWinner ? (
-            <span className="text-yellow-400">You won!</span>
+            <span className="text-yellow-400">¡Ganaste!</span>
           ) : (
             <>
-              Winner:{' '}
+              Ganador:{' '}
               <span className="text-yellow-400 font-semibold">
                 {winner.username}
               </span>{' '}
-              with {(winner.score / 10).toFixed(1)} points
+              con {(winner.score / 10).toFixed(1)} puntos
             </>
           )}
         </p>
@@ -92,13 +92,13 @@ export default function FinishedPhase({
           onClick={() => router.push(`/rooms/${roomId}/results`)}
           className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors cursor-pointer"
         >
-          Detailed Results
+          Resultados Detallados
         </button>
         <button
           onClick={() => router.push('/')}
           className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Back to Rooms
+          Volver a las Salas
         </button>
       </div>
     </div>

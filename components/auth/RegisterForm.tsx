@@ -55,25 +55,25 @@ export default function RegisterForm() {
       if (!response.ok) {
         if (data.details) {
           setFromZodIssues(data.details);
-        } else if (data.error === 'Username already taken') {
-          setFieldError('username', 'Username already taken');
-        } else if (data.error === 'Email already registered') {
-          setFieldError('email', 'Email already registered');
+        } else if (data.error === 'Nombre de usuario ya registrado') {
+          setFieldError('username', 'Nombre de usuario ya registrado');
+        } else if (data.error === 'Correo electrónico ya registrado') {
+          setFieldError('email', 'Correo electrónico ya registrado');
         } else {
-          setGeneralError(data.error || 'Registration failed');
+          setGeneralError(data.error || 'Error en el registro');
         }
         return;
       }
 
       // Show success message if first user
       if (data.message?.includes('Admin')) {
-        addToast('success', 'You are the first user and have been granted admin privileges!');
+        addToast('success', 'Eres el primer usuario y se te han otorgado privilegios de administrador.');
       }
 
       router.push('/');
       router.refresh();
     } catch {
-      setGeneralError('Network error. Please try again.');
+      setGeneralError('Error de red. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,7 @@ export default function RegisterForm() {
 
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-          Username
+          Nombre de usuario
         </label>
         <input
           id="username"
@@ -102,7 +102,7 @@ export default function RegisterForm() {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-          Email
+          Correo electrónico
         </label>
         <input
           id="email"
@@ -119,7 +119,7 @@ export default function RegisterForm() {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-          Password
+          Contraseña
         </label>
         <PasswordInput
           id="password"
@@ -131,14 +131,14 @@ export default function RegisterForm() {
         <FieldError error={fieldErrors.password} />
         <PasswordRequirements
           requirements={[
-            { label: 'At least 8 characters', met: formData.password.length >= 8 },
+            { label: 'Al menos 8 caracteres', met: formData.password.length >= 8 },
           ]}
         />
       </div>
 
       <div>
         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-          Confirm Password
+          Confirmar contraseña
         </label>
         <PasswordInput
           id="confirmPassword"
@@ -152,7 +152,7 @@ export default function RegisterForm() {
           <PasswordRequirements
             requirements={[
               {
-                label: 'Passwords match',
+                label: 'Las contraseñas coinciden',
                 met: formData.password === formData.confirmPassword && formData.confirmPassword.length > 0,
               },
             ]}
@@ -165,13 +165,13 @@ export default function RegisterForm() {
         disabled={loading}
         className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-semibold py-3 rounded transition-colors cursor-pointer"
       >
-        {loading ? 'Creating Account...' : 'Register'}
+        {loading ? 'Creando cuenta...' : 'Registrarse'}
       </button>
 
       <p className="text-center text-gray-400 text-sm">
-        Already have an account?{' '}
+        ¿Ya tienes cuenta?{' '}
         <Link href="/login" className="text-cyan-500 hover:text-cyan-400">
-          Sign in
+          Iniciar sesión
         </Link>
       </p>
     </form>

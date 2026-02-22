@@ -5,8 +5,8 @@ export default function ResultsError({ error, reset }: { error: Error & { digest
     <ErrorBoundaryFallback
       error={error}
       reset={reset}
-      title="Results Error"
-      description="Could not load the game results. Please try again."
+      title="Error de Resultados"
+      description="No se pudieron cargar los resultados del juego. Por favor, inténtalo de nuevo."
     />
   );
 }

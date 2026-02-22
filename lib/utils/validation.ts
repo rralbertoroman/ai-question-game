@@ -6,23 +6,23 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   username: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username must be at most 20 characters')
+    .min(3, 'El nombre de usuario debe tener al menos 3 caracteres')
+    .max(20, 'El nombre de usuario debe tener como máximo 20 caracteres')
     .regex(
       /^[a-zA-Z0-9_]+$/,
-      'Username can only contain letters, numbers, and underscores'
+      'El nombre de usuario solo puede contener letras, números y guiones bajos'
     ),
   email: z
     .string()
-    .email('Invalid email address')
-    .max(255, 'Email is too long'),
+    .email('Dirección de correo electrónico inválida')
+    .max(255, 'El correo electrónico es demasiado largo'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(255, 'Password is too long'),
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .max(255, 'La contraseña es demasiado larga'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
 });
 
@@ -30,24 +30,21 @@ export const registerSchema = z.object({
  * Login form validation schema
  */
 export const loginSchema = z.object({
-  email: z.string().refine(
-    (val) => val.includes('@'),
-    'Please enter your email address, not your username'
-  ).pipe(z.string().email('Invalid email address')),
-  password: z.string().min(1, 'Password is required'),
+  username: z.string().min(1, 'El nombre de usuario es obligatorio'),
+  password: z.string().min(1, 'La contraseña es obligatoria'),
 });
 
 export const createRoomSchema = z.object({
   name: z
     .string()
-    .min(3, 'Room name must be at least 3 characters')
-    .max(100, 'Room name must be at most 100 characters')
+    .min(3, 'El nombre de la sala debe tener al menos 3 caracteres')
+    .max(100, 'El nombre de la sala debe tener como máximo 100 caracteres')
     .trim(),
   participantLimit: z
     .number()
-    .int('Participant limit must be a whole number')
-    .min(2, 'Minimum 2 participants')
-    .max(20, 'Maximum 20 participants')
+    .int('El límite de participantes debe ser un número entero')
+    .min(2, 'Mínimo 2 participantes')
+    .max(20, 'Máximo 20 participantes')
     .default(6),
 });
 

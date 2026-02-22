@@ -124,17 +124,17 @@ export default function QuestionPhase({
       <div className="text-center text-sm text-gray-500">
         {hasAnswered ? (
           <span className="text-cyan-400">
-            Answer submitted. Waiting for others...
+            Respuesta enviada. Esperando a los demás...
           </span>
         ) : submitting ? (
           <span className="text-cyan-400/70">
-            Submitting...
+            Enviando...
           </span>
         ) : (
-          <span>Select your answer</span>
+          <span>Selecciona tu respuesta</span>
         )}
         <span className="ml-3">
-          {answeredCount}/{totalPlayers} answered
+          {answeredCount}/{totalPlayers} respondieron
         </span>
       </div>
     </div>

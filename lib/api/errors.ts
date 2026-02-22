@@ -5,7 +5,7 @@ export class ApiError extends Error {
   }
 }
 
-export function notFound(message: string = 'Not found'): never {
+export function notFound(message: string = 'No encontrado'): never {
   throw new ApiError(404, message);
 }
 

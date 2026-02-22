@@ -70,7 +70,7 @@ export function apiHandler(
         });
 
         if (!room) {
-          return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+          return NextResponse.json({ error: 'Sala no encontrada' }, { status: 404 });
         }
 
         ctx.room = room;
@@ -86,7 +86,7 @@ export function apiHandler(
 
         if (!participant) {
           return NextResponse.json(
-            { error: 'Not a participant in this room' },
+            { error: 'No eres participante de esta sala' },
             { status: 403 }
           );
         }
@@ -113,7 +113,7 @@ export function apiHandler(
       // Zod validation errors
       if (error instanceof z.ZodError) {
         return NextResponse.json(
-          { error: 'Validation failed', details: error.issues },
+          { error: 'Error de validación', details: error.issues },
           { status: 400 }
         );
       }
@@ -125,7 +125,7 @@ export function apiHandler(
         }
         if (error.message === 'Forbidden: Admin access required') {
           return NextResponse.json(
-            { error: 'Admin access required' },
+            { error: 'Se requiere acceso de administrador' },
             { status: 403 }
           );
         }
@@ -134,7 +134,7 @@ export function apiHandler(
       // Fallback
       console.error('API error:', error);
       return NextResponse.json(
-        { error: 'Internal server error' },
+        { error: 'Error interno del servidor' },
         { status: 500 }
       );
     }

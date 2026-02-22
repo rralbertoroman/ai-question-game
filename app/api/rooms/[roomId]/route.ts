@@ -20,7 +20,7 @@ export const GET = apiHandler(
     });
 
     if (!room) {
-      notFound('Room not found');
+      notFound('Sala no encontrada');
     }
 
     return NextResponse.json({ room });

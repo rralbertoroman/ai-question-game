@@ -8,16 +8,16 @@ import { apiHandler } from '@/lib/api/handler';
 export const POST = apiHandler(
   { auth: 'none', schema: loginSchema },
   async (ctx) => {
-    const validatedData = ctx.body as { email: string; password: string };
+    const validatedData = ctx.body as { username: string; password: string };
 
-    // Find user by email
+    // Find user by username
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.email, validatedData.email),
+      where: (users, { eq }) => eq(users.username, validatedData.username),
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
@@ -30,7 +30,7 @@ export const POST = apiHandler(
 
     if (!validPassword) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Credenciales inválidas' },
         { status: 401 }
       );
     }

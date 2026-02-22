@@ -20,17 +20,17 @@ export default function Footer() {
           <div className="text-center">
             <p className="font-semibold text-cyan-400">Día Tecnológico: AI</p>
             <p className="text-gray-500 text-xs mt-1">
-              Test your AI &amp; LLM knowledge
+              Pon a prueba tus conocimientos de IA
             </p>
           </div>
 
           {/* Tech credits */}
           <div className="text-right">
             <p className="text-gray-500 text-xs">
-              Built with Next.js, TypeScript &amp; PostgreSQL
+              Desarrollado con Next.js, TypeScript &amp; PostgreSQL
             </p>
             <p className="text-gray-600 text-xs mt-1">
-              Powered by Avangenio
+              Impulsado por Avangenio
             </p>
           </div>
         </div>
