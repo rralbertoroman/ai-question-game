@@ -3,6 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { registerSchema } from '@/lib/utils/validation';
+import { useFieldErrors } from '@/hooks/useFieldErrors';
+import PasswordInput from './PasswordInput';
+import FieldError from './FieldError';
+import PasswordRequirements from './PasswordRequirements';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -12,13 +17,28 @@ export default function RegisterForm() {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { fieldErrors, setFromZodIssues, setFieldError, clearFieldError, clearErrors } = useFieldErrors();
+
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    clearFieldError(field);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
+    clearErrors();
     setLoading(true);
+
+    // Client-side validation
+    const result = registerSchema.safeParse(formData);
+    if (!result.success) {
+      setFromZodIssues(result.error.issues);
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -30,18 +50,27 @@ export default function RegisterForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        if (data.details) {
+          setFromZodIssues(data.details);
+        } else if (data.error === 'Username already taken') {
+          setFieldError('username', 'Username already taken');
+        } else if (data.error === 'Email already registered') {
+          setFieldError('email', 'Email already registered');
+        } else {
+          setGeneralError(data.error || 'Registration failed');
+        }
+        return;
       }
 
       // Show success message if first user
       if (data.message?.includes('Admin')) {
-        alert('🎉 You are the first user and have been granted admin privileges!');
+        alert('You are the first user and have been granted admin privileges!');
       }
 
       router.push('/');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch {
+      setGeneralError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -49,9 +78,9 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
+      {generalError && (
         <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
-          {error}
+          {generalError}
         </div>
       )}
 
@@ -63,10 +92,13 @@ export default function RegisterForm() {
           id="username"
           type="text"
           value={formData.username}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+          onChange={(e) => handleChange('username', e.target.value)}
+          className={`w-full px-4 py-2 bg-gray-800 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white ${
+            fieldErrors.username ? 'border-red-500' : 'border-gray-700'
+          }`}
           required
         />
+        <FieldError error={fieldErrors.username} />
       </div>
 
       <div>
@@ -77,23 +109,31 @@ export default function RegisterForm() {
           id="email"
           type="email"
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+          onChange={(e) => handleChange('email', e.target.value)}
+          className={`w-full px-4 py-2 bg-gray-800 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white ${
+            fieldErrors.email ? 'border-red-500' : 'border-gray-700'
+          }`}
           required
         />
+        <FieldError error={fieldErrors.email} />
       </div>
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
           Password
         </label>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+          onChange={(e) => handleChange('password', e.target.value)}
           required
+          error={!!fieldErrors.password}
+        />
+        <FieldError error={fieldErrors.password} />
+        <PasswordRequirements
+          requirements={[
+            { label: 'At least 8 characters', met: formData.password.length >= 8 },
+          ]}
         />
       </div>
 
@@ -101,20 +141,30 @@ export default function RegisterForm() {
         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
           Confirm Password
         </label>
-        <input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           value={formData.confirmPassword}
-          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+          onChange={(e) => handleChange('confirmPassword', e.target.value)}
           required
+          error={!!fieldErrors.confirmPassword}
         />
+        <FieldError error={fieldErrors.confirmPassword} />
+        {formData.confirmPassword.length > 0 && (
+          <PasswordRequirements
+            requirements={[
+              {
+                label: 'Passwords match',
+                met: formData.password === formData.confirmPassword && formData.confirmPassword.length > 0,
+              },
+            ]}
+          />
+        )}
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-semibold py-3 rounded transition-colors"
+        className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-semibold py-3 rounded transition-colors cursor-pointer"
       >
         {loading ? 'Creating Account...' : 'Register'}
       </button>
