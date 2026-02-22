@@ -21,7 +21,7 @@ export async function GET(
       ),
     });
 
-    if (!participant) {
+    if (!participant && user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Not a participant in this room' },
         { status: 403 }

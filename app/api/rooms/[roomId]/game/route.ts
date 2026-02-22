@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { roomParticipants } from '@/lib/db/schema';
 import { requireAuth } from '@/lib/auth/simple-session';
 import { eq, and } from 'drizzle-orm';
-import { resolveGameState } from '@/lib/game/engine';
+import { resolveGameState, resolveGameStateForAdmin } from '@/lib/game/engine';
 
 export async function GET(
   _request: NextRequest,
@@ -21,16 +21,21 @@ export async function GET(
       ),
     });
 
-    if (!participant) {
-      return NextResponse.json(
-        { error: 'Not a participant in this room' },
-        { status: 403 }
-      );
+    if (participant) {
+      const gameState = await resolveGameState(roomId, user.id);
+      return NextResponse.json(gameState);
     }
 
-    const gameState = await resolveGameState(roomId, user.id);
+    // Not a participant — allow admin supervision
+    if (user.role === 'admin') {
+      const gameState = await resolveGameStateForAdmin(roomId);
+      return NextResponse.json(gameState);
+    }
 
-    return NextResponse.json(gameState);
+    return NextResponse.json(
+      { error: 'Not a participant in this room' },
+      { status: 403 }
+    );
   } catch (error) {
     if (error instanceof Error && error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

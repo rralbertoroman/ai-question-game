@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { rooms } from '@/lib/db/schema';
 import { requireAuth, requireAdmin } from '@/lib/auth/simple-session';
 import { createRoomSchema } from '@/lib/utils/validation';
-import { ne } from 'drizzle-orm';
+import { ne, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 export async function GET() {
@@ -22,7 +22,22 @@ export async function GET() {
       orderBy: (rooms, { desc }) => [desc(rooms.createdAt)],
     });
 
-    return NextResponse.json({ rooms: allRooms, currentUserId: user.id });
+    let finishedRooms: typeof allRooms = [];
+    if (user.role === 'admin') {
+      finishedRooms = await db.query.rooms.findMany({
+        where: eq(rooms.status, 'finished'),
+        with: {
+          participants: {
+            with: { user: { columns: { id: true, username: true } } },
+          },
+          admin: { columns: { id: true, username: true } },
+        },
+        orderBy: (rooms, { desc }) => [desc(rooms.createdAt)],
+        limit: 20,
+      });
+    }
+
+    return NextResponse.json({ rooms: allRooms, finishedRooms, currentUserId: user.id });
   } catch (error) {
     if (error instanceof Error && error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
