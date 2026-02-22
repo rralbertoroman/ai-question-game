@@ -1,16 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyPassword } from '@/lib/auth/password';
 import { createSession, setSessionCookie } from '@/lib/auth/simple-session';
 import { loginSchema } from '@/lib/utils/validation';
-import { z } from 'zod';
+import { apiHandler } from '@/lib/api/handler';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    // Validate input
-    const validatedData = loginSchema.parse(body);
+export const POST = apiHandler(
+  { auth: 'none', schema: loginSchema },
+  async (ctx) => {
+    const validatedData = ctx.body as { email: string; password: string };
 
     // Find user by email
     const user = await db.query.users.findFirst({
@@ -50,18 +48,5 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      );
-    }
-
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Failed to login' },
-      { status: 500 }
-    );
   }
-}
+);

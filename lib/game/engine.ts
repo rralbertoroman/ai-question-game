@@ -8,7 +8,9 @@ import {
   scores,
   users,
 } from '@/lib/db/schema';
-import { eq, and, sql, count, inArray } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
+import { getParticipantCount } from '@/lib/db/repositories/participants';
+import { findPlayerAnswer, getAnswerCount, getQuestionAnswersWithUsers } from '@/lib/db/repositories/answers';
 import { GAME_CONFIG } from './config';
 import {
   getShufflePermutation,
@@ -127,13 +129,7 @@ export async function submitAnswer(
   const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
 
   // Check if already answered
-  const existing = await db.query.playerAnswers.findFirst({
-    where: and(
-      eq(playerAnswers.roomId, roomId),
-      eq(playerAnswers.userId, userId),
-      eq(playerAnswers.questionId, currentQuestionId)
-    ),
-  });
+  const existing = await findPlayerAnswer(roomId, userId, currentQuestionId);
 
   if (existing) {
     throw new Error('Already answered this question');
@@ -199,22 +195,10 @@ async function checkAndTransitionToSummary(roomId: string): Promise<void> {
   const questionOrder = gameState.questionOrder as number[];
   const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
 
-  const [participantCount] = await db
-    .select({ count: count() })
-    .from(roomParticipants)
-    .where(eq(roomParticipants.roomId, roomId));
+  const participantTotal = await getParticipantCount(roomId);
+  const answerTotal = await getAnswerCount(roomId, currentQuestionId);
 
-  const [answerCount] = await db
-    .select({ count: count() })
-    .from(playerAnswers)
-    .where(
-      and(
-        eq(playerAnswers.roomId, roomId),
-        eq(playerAnswers.questionId, currentQuestionId)
-      )
-    );
-
-  if (answerCount.count >= participantCount.count) {
+  if (answerTotal >= participantTotal) {
     await db
       .update(gameStates)
       .set({
@@ -397,28 +381,9 @@ export async function resolveGameState(
       (GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS - elapsed) * 1000
     );
 
-    const existingAnswer = await db.query.playerAnswers.findFirst({
-      where: and(
-        eq(playerAnswers.roomId, roomId),
-        eq(playerAnswers.userId, userId),
-        eq(playerAnswers.questionId, currentQuestionId)
-      ),
-    });
-
-    const [participantCount] = await db
-      .select({ count: count() })
-      .from(roomParticipants)
-      .where(eq(roomParticipants.roomId, roomId));
-
-    const [answerCount] = await db
-      .select({ count: count() })
-      .from(playerAnswers)
-      .where(
-        and(
-          eq(playerAnswers.roomId, roomId),
-          eq(playerAnswers.questionId, currentQuestionId)
-        )
-      );
+    const existingAnswer = await findPlayerAnswer(roomId, userId, currentQuestionId);
+    const totalPlayers = await getParticipantCount(roomId);
+    const answeredCount = await getAnswerCount(roomId, currentQuestionId);
 
     return {
       ...shared,
@@ -435,8 +400,8 @@ export async function resolveGameState(
       selectedAnswerIndex: existingAnswer?.answerIndex != null
         ? originalToShuffled(existingAnswer.answerIndex, permutation)
         : null,
-      answeredCount: answerCount.count,
-      totalPlayers: participantCount.count,
+      answeredCount,
+      totalPlayers,
     } satisfies QuestionState;
   }
 
@@ -457,21 +422,7 @@ export async function resolveGameState(
       (GAME_CONFIG.SUMMARY_DISPLAY_SECONDS - elapsed) * 1000
     );
 
-    const answers = await db
-      .select({
-        userId: playerAnswers.userId,
-        username: users.username,
-        answerIndex: playerAnswers.answerIndex,
-        isCorrect: playerAnswers.isCorrect,
-      })
-      .from(playerAnswers)
-      .innerJoin(users, eq(playerAnswers.userId, users.id))
-      .where(
-        and(
-          eq(playerAnswers.roomId, roomId),
-          eq(playerAnswers.questionId, currentQuestionId)
-        )
-      );
+    const answers = await getQuestionAnswersWithUsers(roomId, currentQuestionId);
 
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,
@@ -553,20 +504,8 @@ export async function resolveGameStateForAdmin(
       (GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS - elapsed) * 1000
     );
 
-    const [participantCount] = await db
-      .select({ count: count() })
-      .from(roomParticipants)
-      .where(eq(roomParticipants.roomId, roomId));
-
-    const [answerCount] = await db
-      .select({ count: count() })
-      .from(playerAnswers)
-      .where(
-        and(
-          eq(playerAnswers.roomId, roomId),
-          eq(playerAnswers.questionId, currentQuestionId)
-        )
-      );
+    const totalPlayers = await getParticipantCount(roomId);
+    const answeredCount = await getAnswerCount(roomId, currentQuestionId);
 
     return {
       ...shared,
@@ -581,8 +520,8 @@ export async function resolveGameStateForAdmin(
       },
       hasAnswered: false,
       selectedAnswerIndex: null,
-      answeredCount: answerCount.count,
-      totalPlayers: participantCount.count,
+      answeredCount,
+      totalPlayers,
     } satisfies QuestionState;
   }
 
@@ -603,21 +542,7 @@ export async function resolveGameStateForAdmin(
       (GAME_CONFIG.SUMMARY_DISPLAY_SECONDS - elapsed) * 1000
     );
 
-    const answers = await db
-      .select({
-        userId: playerAnswers.userId,
-        username: users.username,
-        answerIndex: playerAnswers.answerIndex,
-        isCorrect: playerAnswers.isCorrect,
-      })
-      .from(playerAnswers)
-      .innerJoin(users, eq(playerAnswers.userId, users.id))
-      .where(
-        and(
-          eq(playerAnswers.roomId, roomId),
-          eq(playerAnswers.questionId, currentQuestionId)
-        )
-      );
+    const answers = await getQuestionAnswersWithUsers(roomId, currentQuestionId);
 
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,

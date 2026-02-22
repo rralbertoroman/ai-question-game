@@ -1,17 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db, users } from '@/lib/db';
 import { hashPassword } from '@/lib/auth/password';
 import { createSession, setSessionCookie } from '@/lib/auth/simple-session';
 import { registerSchema } from '@/lib/utils/validation';
 import { sql } from 'drizzle-orm';
-import { z } from 'zod';
+import { apiHandler } from '@/lib/api/handler';
+import { badRequest } from '@/lib/api/errors';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    // Validate input
-    const validatedData = registerSchema.parse(body);
+export const POST = apiHandler(
+  { auth: 'none', schema: registerSchema },
+  async (ctx) => {
+    const validatedData = ctx.body as { username: string; email: string; password: string };
 
     // Check if username already exists
     const existingUsername = await db.query.users.findFirst({
@@ -19,10 +18,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUsername) {
-      return NextResponse.json(
-        { error: 'Username already taken' },
-        { status: 400 }
-      );
+      badRequest('Username already taken');
     }
 
     // Check if email already exists
@@ -31,10 +27,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingEmail) {
-      return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 400 }
-      );
+      badRequest('Email already registered');
     }
 
     // Check if this is the first user (becomes admin)
@@ -74,18 +67,5 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      );
-    }
-
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create account' },
-      { status: 500 }
-    );
   }
-}
+);

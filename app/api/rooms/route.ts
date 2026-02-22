@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { rooms } from '@/lib/db/schema';
-import { requireAuth, requireAdmin } from '@/lib/auth/simple-session';
-import { createRoomSchema } from '@/lib/utils/validation';
 import { ne, eq } from 'drizzle-orm';
-import { z } from 'zod';
+import { apiHandler } from '@/lib/api/handler';
+import { createRoomSchema } from '@/lib/utils/validation';
 
-export async function GET() {
-  try {
-    const user = await requireAuth();
+export const GET = apiHandler(
+  { auth: 'user' },
+  async (ctx) => {
+    const user = ctx.user!;
 
     const allRooms = await db.query.rooms.findMany({
       where: ne(rooms.status, 'finished'),
@@ -38,20 +38,13 @@ export async function GET() {
     }
 
     return NextResponse.json({ rooms: allRooms, finishedRooms, currentUserId: user.id });
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    console.error('List rooms error:', error);
-    return NextResponse.json({ error: 'Failed to list rooms' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAdmin();
-    const body = await request.json();
-    const { name, participantLimit } = createRoomSchema.parse(body);
+export const POST = apiHandler(
+  { auth: 'admin', schema: createRoomSchema },
+  async (ctx) => {
+    const { name, participantLimit } = ctx.body as { name: string; participantLimit: number };
 
     const roomId = nanoid();
     const [newRoom] = await db
@@ -59,27 +52,12 @@ export async function POST(request: NextRequest) {
       .values({
         id: roomId,
         name,
-        adminId: user.id,
+        adminId: ctx.user!.id,
         participantLimit,
         status: 'open',
       })
       .returning();
 
     return NextResponse.json({ success: true, room: newRoom }, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      );
-    }
-    if (error instanceof Error && error.message === 'Forbidden: Admin access required') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    console.error('Create room error:', error);
-    return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
   }
-}
+);
