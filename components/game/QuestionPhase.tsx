@@ -20,7 +20,7 @@ interface Props {
   selectedAnswerIndex: number | null;
   answeredCount: number;
   totalPlayers: number;
-  onSubmitAnswer: (index: number) => void;
+  onSubmitAnswer: (index: number) => Promise<boolean>;
 }
 
 const difficultyColors: Record<string, string> = {
@@ -41,12 +41,21 @@ export default function QuestionPhase({
   onSubmitAnswer,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const [localSelectedIndex, setLocalSelectedIndex] = useState<number | null>(null);
 
   const handleAnswer = async (index: number) => {
     if (hasAnswered || submitting) return;
     setSubmitting(true);
-    onSubmitAnswer(index);
+    setLocalSelectedIndex(index);
+    const ok = await onSubmitAnswer(index);
+    if (!ok) {
+      setSubmitting(false);
+      setLocalSelectedIndex(null);
+    }
   };
+
+  const effectiveHasAnswered = hasAnswered || submitting;
+  const effectiveSelectedIndex = selectedAnswerIndex ?? localSelectedIndex;
 
   return (
     <div className="animate-fade-in-up">
@@ -78,11 +87,11 @@ export default function QuestionPhase({
       {/* Answers */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         {question.answers.map((answer, index) => {
-          const isSelected = selectedAnswerIndex === index;
+          const isSelected = effectiveSelectedIndex === index;
           let btnClass =
             'w-full p-4 text-left rounded-lg border transition-all cursor-pointer ';
 
-          if (hasAnswered) {
+          if (effectiveHasAnswered) {
             if (isSelected) {
               btnClass +=
                 'bg-cyan-500/20 border-cyan-500 text-white answer-glow-selected';
@@ -99,7 +108,7 @@ export default function QuestionPhase({
             <button
               key={index}
               onClick={() => handleAnswer(index)}
-              disabled={hasAnswered || submitting}
+              disabled={effectiveHasAnswered}
               className={btnClass}
             >
               <span className="text-cyan-400 font-mono mr-3">
@@ -116,6 +125,10 @@ export default function QuestionPhase({
         {hasAnswered ? (
           <span className="text-cyan-400">
             Answer submitted. Waiting for others...
+          </span>
+        ) : submitting ? (
+          <span className="text-cyan-400/70">
+            Submitting...
           </span>
         ) : (
           <span>Select your answer</span>
