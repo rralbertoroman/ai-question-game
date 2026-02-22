@@ -46,7 +46,7 @@ export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
               <div key={index} className={cls}>
                 <span className="font-mono mr-2">{answerLabels[index]}.</span>
                 {answer}
-                {isCorrect && <span className="ml-2">\u2713</span>}
+                {isCorrect && <span className="ml-2">✓</span>}
               </div>
             );
           })}
@@ -75,11 +75,11 @@ export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
                     <span className="text-gray-500 italic">Tiempo agotado</span>
                   ) : isCorrect ? (
                     <span className="text-green-400">
-                      {answerLabels[result.answerIndex!]} \u2713
+                      {answerLabels[result.answerIndex!]} ✓
                     </span>
                   ) : (
                     <span className="text-red-400">
-                      {answerLabels[result.answerIndex!]} \u2717
+                      {answerLabels[result.answerIndex!]} ✗
                     </span>
                   )}
                 </span>

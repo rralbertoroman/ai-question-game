@@ -37,20 +37,21 @@ docker-compose up -d      # Start PostgreSQL
 
 All commits MUST use conventional commit format:
 
-| Prefix     | Purpose                                    |
-|------------|--------------------------------------------|
-| `feat:`    | New feature                                |
-| `fix:`     | Bug fix                                    |
-| `refactor:`| Code restructuring (no behavior change)    |
-| `style:`   | Formatting, whitespace (no code change)    |
-| `docs:`    | Documentation only                         |
-| `chore:`   | Build, config, dependencies                |
-| `test:`    | Adding or updating tests                   |
-| `perf:`    | Performance improvement                    |
+| Prefix      | Purpose                                 |
+| ----------- | --------------------------------------- |
+| `feat:`     | New feature                             |
+| `fix:`      | Bug fix                                 |
+| `refactor:` | Code restructuring (no behavior change) |
+| `style:`    | Formatting, whitespace (no code change) |
+| `docs:`     | Documentation only                      |
+| `chore:`    | Build, config, dependencies             |
+| `test:`     | Adding or updating tests                |
+| `perf:`     | Performance improvement                 |
 
 **Format:** `<type>(<optional scope>): <short description>`
 
 Examples:
+
 ```
 feat(game): add answer timer pause on tab switch
 fix(auth): prevent session expiry race condition
@@ -64,6 +65,10 @@ Detailed docs — read on-demand when working in these areas:
 
 - `docs/architecture.md` — Project structure, DB schema, game engine, SSE, answer shuffling, scoring
 - `docs/api-routes.md` — All API endpoints with methods, auth, and descriptions
+
+## Data Files
+
+- `data/questions.json` is **gitignored** — quiz content must not be committed to avoid leaking questions to players
 
 ## Environment
 
