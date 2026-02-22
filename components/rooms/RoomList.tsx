@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { GAME_CONFIG } from '@/lib/game/config';
+import { usePolling } from '@/components/hooks/usePolling';
 import RoomCard from './RoomCard';
 
 interface Participant {
@@ -47,11 +49,10 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
     }
   }, []);
 
-  // Poll every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(fetchRooms, 5000);
-    return () => clearInterval(interval);
-  }, [fetchRooms]);
+  const { trigger } = usePolling({
+    callback: fetchRooms,
+    intervalMs: GAME_CONFIG.ROOM_LIST_POLL_INTERVAL_MS,
+  });
 
   if (rooms.length === 0 && finishedRooms.length === 0) {
     return (
@@ -74,7 +75,7 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
               <RoomCard
                 room={room}
                 currentUser={currentUser}
-                onUpdate={fetchRooms}
+                onUpdate={trigger}
               />
             </div>
           ))}
@@ -94,7 +95,7 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
                 <RoomCard
                   room={room}
                   currentUser={currentUser}
-                  onUpdate={fetchRooms}
+                  onUpdate={trigger}
                 />
               </div>
             ))}

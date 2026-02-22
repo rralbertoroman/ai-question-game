@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GAME_CONFIG } from '@/lib/game/config';
-import type { GameStateResponse } from '@/lib/game/types';
+import { useGameSSE } from '@/components/hooks/useGameSSE';
 import SummaryPhase from './SummaryPhase';
 import Leaderboard from './Leaderboard';
 import ProgressBar from './ProgressBar';
@@ -24,33 +24,18 @@ const answerLabels = ['A', 'B', 'C', 'D'];
 
 export default function AdminSupervision({ roomId, roomName }: Props) {
   const router = useRouter();
-  const [gameState, setGameState] = useState<GameStateResponse | null>(null);
 
-  const fetchGameState = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/rooms/${roomId}/game`);
-      if (res.status === 403 || res.status === 404) {
-        router.push('/');
-        return;
-      }
-      if (res.ok) {
-        const data: GameStateResponse = await res.json();
-        setGameState(data);
+  const { gameState } = useGameSSE({
+    roomId,
+    enabled: true,
+  });
 
-        if (data.phase === 'finished') {
-          router.push(`/rooms/${roomId}/results`);
-        }
-      }
-    } catch {
-      // Retry on next poll
-    }
-  }, [roomId, router]);
-
+  // Redirect to results when game finishes
   useEffect(() => {
-    fetchGameState();
-    const interval = setInterval(fetchGameState, GAME_CONFIG.POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [fetchGameState]);
+    if (gameState?.phase === 'finished') {
+      router.push(`/rooms/${roomId}/results`);
+    }
+  }, [gameState?.phase, roomId, router]);
 
   if (!gameState) {
     return (
@@ -96,7 +81,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
         )}
 
         {/* Question phase - READ ONLY */}
-        {gameState.phase === 'question' && gameState.question && (
+        {gameState.phase === 'question' && (
           <div className="animate-fade-in-up">
             <TimerDisplay
               serverTimeRemainingMs={gameState.timeRemainingMs}
@@ -136,7 +121,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
         )}
 
         {/* Summary phase - reuse existing component */}
-        {gameState.phase === 'summary' && gameState.summary && (
+        {gameState.phase === 'summary' && (
           <SummaryPhase
             summary={gameState.summary}
             timeRemainingMs={gameState.timeRemainingMs}

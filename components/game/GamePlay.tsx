@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GAME_CONFIG } from '@/lib/game/config';
-import type { GameStateResponse } from '@/lib/game/types';
+import { useGameSSE } from '@/components/hooks/useGameSSE';
 import QuestionPhase from './QuestionPhase';
 import SummaryPhase from './SummaryPhase';
 import FinishedPhase from './FinishedPhase';
@@ -17,32 +16,14 @@ interface Props {
 
 export default function GamePlay({ roomId, userId }: Props) {
   const router = useRouter();
-  const [gameState, setGameState] = useState<GameStateResponse | null>(null);
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
-  const fetchGameState = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/rooms/${roomId}/game`);
-      if (res.status === 403 || res.status === 404) {
-        router.push('/');
-        return;
-      }
-      if (res.ok) {
-        const data: GameStateResponse = await res.json();
-        setGameState(data);
-        setError('');
-      }
-    } catch {
-      // Retry on next poll
-    }
-  }, [roomId, router]);
+  const { gameState, error: sseError, refetch } = useGameSSE({
+    roomId,
+    enabled: true,
+  });
 
-  // Poll game state
-  useEffect(() => {
-    fetchGameState();
-    const interval = setInterval(fetchGameState, GAME_CONFIG.POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [fetchGameState]);
+  const error = submitError || sseError;
 
   const handleSubmitAnswer = async (answerIndex: number) => {
     try {
@@ -53,11 +34,10 @@ export default function GamePlay({ roomId, userId }: Props) {
       });
 
       if (res.ok) {
-        // Immediately re-fetch to get updated state
-        await fetchGameState();
+        await refetch();
       }
     } catch {
-      setError('Failed to submit answer');
+      setSubmitError('Failed to submit answer');
     }
   };
 
@@ -98,19 +78,19 @@ export default function GamePlay({ roomId, userId }: Props) {
         )}
 
         {/* Phase content */}
-        {gameState.phase === 'question' && gameState.question && (
+        {gameState.phase === 'question' && (
           <QuestionPhase
             question={gameState.question}
             timeRemainingMs={gameState.timeRemainingMs}
-            hasAnswered={gameState.hasAnswered ?? false}
-            selectedAnswerIndex={gameState.selectedAnswerIndex ?? null}
-            answeredCount={gameState.answeredCount ?? 0}
-            totalPlayers={gameState.totalPlayers ?? 0}
+            hasAnswered={gameState.hasAnswered}
+            selectedAnswerIndex={gameState.selectedAnswerIndex}
+            answeredCount={gameState.answeredCount}
+            totalPlayers={gameState.totalPlayers}
             onSubmitAnswer={handleSubmitAnswer}
           />
         )}
 
-        {gameState.phase === 'summary' && gameState.summary && (
+        {gameState.phase === 'summary' && (
           <SummaryPhase
             summary={gameState.summary}
             timeRemainingMs={gameState.timeRemainingMs}
