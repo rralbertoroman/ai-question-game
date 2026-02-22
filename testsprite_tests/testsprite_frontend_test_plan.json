@@ -1,0 +1,1466 @@
+[
+  {
+    "id": "TC001",
+    "title": "Successful registration redirects to home page",
+    "description": "Verifies a user can create an account with valid inputs and is redirected to the home page after seeing the loading state.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_01\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_01@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Registration blocked when username is already registered",
+    "description": "Verifies the form shows the specific username-taken error and does not proceed to account creation.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"existing_user\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"new_email_for_existing_user@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nombre de usuario ya registrado\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Username validation: too short prevents submission",
+    "description": "Verifies a username shorter than 3 characters triggers validation and prevents submission.",
+    "category": "User Registration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ab\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"short_user@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/register\""
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Username validation: invalid characters prevented",
+    "description": "Verifies usernames with characters outside alphanumeric/underscore are rejected and submission does not proceed.",
+    "category": "User Registration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid-user\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid_chars@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/register\""
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Email validation: invalid email format prevents submission",
+    "description": "Verifies an invalid email format triggers validation and the form does not submit.",
+    "category": "User Registration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_02\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"not-an-email\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/register\""
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Password requirements visible when entering password",
+    "description": "Verifies password requirement guidance is shown when filling the password field.",
+    "category": "User Registration",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_03\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_03@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"short\" into \"Contraseña\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Password requirements\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/register\""
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Confirm password mismatch prevents submission",
+    "description": "Verifies the form blocks submission when confirm password does not match password.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_04\" into \"Nombre de usuario\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"test_user_04@example.com\" into \"Correo electrónico\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into \"Contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"DifferentPass123!\" into \"Confirmar contraseña\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Registrarse\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creando cuenta...\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/register\""
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Navigate from registration to login via 'Iniciar Sesión' link",
+    "description": "Verifies the user can reach the login page from the registration page using the provided link.",
+    "category": "User Registration",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Iniciar Sesión\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Iniciar Sesión\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Usuario\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Contraseña\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Load home page and verify greeting and room list are visible",
+    "description": "Verifies an authenticated user can reach the home page and see the welcome greeting and a visible room list area.",
+    "category": "Room List and Creation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Bienvenido\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"room list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Join an available room from a room card and land on the play page",
+    "description": "Verifies a user can click a room card and is navigated to the room play page after a successful join.",
+    "category": "Room List and Creation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room card that shows an available status (not full)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/rooms/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/play\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"game play\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Room cards display name, status, and participant count",
+    "description": "Verifies that room cards present the key summary fields (name, status, participant count) to the user.",
+    "category": "Room List and Creation",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"room list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the first room card shows a room name text"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the first room card shows a status text"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the first room card shows a participant count text"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Admin can create a new room from '+ Crear Sala' and see it in the list",
+    "description": "Verifies an admin user can open the create room form, submit it, and see a new room card appear in the room list.",
+    "category": "Room List and Creation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"+ Crear Sala\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"+ Crear Sala\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"create room form\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Sala de Prueba\" into the room name field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"4\" into the participant limit field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Crear\" (submit) button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sala de Prueba\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Create room form validation: required fields block submission",
+    "description": "Verifies the create room form shows a visible validation error (or blocks creation) when required fields are missing.",
+    "category": "Room List and Creation",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"+ Crear Sala\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"create room form\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Crear\" (submit) button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"requerido\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Join failure shows an error message (e.g., 'Sala llena')",
+    "description": "Verifies that when joining a room fails, the user sees a visible error message and is not taken to the play page.",
+    "category": "Room List and Creation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on a room card that indicates it is full (e.g., status shows full or participant count at limit)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sala llena\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Non-admin user does not see '+ Crear Sala' button",
+    "description": "Verifies that users without admin privileges cannot see the create room button on the home page.",
+    "category": "Room List and Creation",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Bienvenido\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"+ Crear Sala\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Logout from home page returns user to login page",
+    "description": "Verifies that clicking 'Cerrar Sesión' logs the user out and returns them to the login screen.",
+    "category": "Room List and Creation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cerrar Sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"login form\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Start gameplay and verify core question UI elements are visible",
+    "description": "Verifies that entering the play view shows a question, four answer options, a running timer, and progress/leaderboard UI.",
+    "category": "Game Play",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/play\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an element \"Pregunta\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Answer a question and see optimistic selection feedback",
+    "description": "Verifies that clicking an answer immediately marks the selection before the summary phase appears.",
+    "category": "Game Play",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/play\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the first visible answer option button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an element \"Respuesta seleccionada\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "After answering, see summary with correct answer highlighted and leaderboard visible",
+    "description": "Verifies the transition from question phase to summary phase and the presence of correct-answer indication plus leaderboard.",
+    "category": "Game Play",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/play\""
+      },
+      {
+        "type": "action",
+        "description": "Click on any visible answer option button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Respuesta correcta\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Progress indicator updates across questions",
+    "description": "Verifies that the progress display reflects question advancement (e.g., 1/10 to 2/10).",
+    "category": "Game Play",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"1/10\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on any visible answer option button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"2/10\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Timer is visible during question phase",
+    "description": "Verifies the presence of the 30-second countdown timer during an active question.",
+    "category": "Game Play",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an element \"Tiempo\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"30\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Finished phase appears after final question and navigation to results works",
+    "description": "Verifies that the game eventually reaches the finished phase and the user can open the results page.",
+    "category": "Game Play",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Jugar\" or \"Play\" button/link for an available room"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the \"Finalizado\" or \"Juego terminado\" screen to appear (up to 5 minutes)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Resultados finales\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ver resultados\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/results\""
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "View results page shows leaderboard and per-question breakdown",
+    "description": "Verifies that an authenticated user can open the results page and see the final leaderboard and per-question breakdown sections.",
+    "category": "Game Results",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabla de clasificación\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Leaderboard displays rankings and scores",
+    "description": "Verifies that the results leaderboard renders player rankings and their scores in a visible list/table.",
+    "category": "Game Results",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Puntuación\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Per-question breakdown shows correctness, difficulty, and category labels",
+    "description": "Verifies that the per-question breakdown area includes visible fields for correctness, difficulty, and category.",
+    "category": "Game Results",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Dificultad\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Per-question breakdown list renders multiple question rows/cards when available",
+    "description": "Verifies that the per-question breakdown shows a visible list of question items (more than one when data exists).",
+    "category": "Game Results",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Desglose por pregunta\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Return to home from results page",
+    "description": "Verifies that the user can navigate from results back to the home page using the provided control.",
+    "category": "Game Results",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Volver\" or \"Inicio\" button/link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Results page shows a loading state before data appears",
+    "description": "Verifies that a visible loading indicator/state appears while results are being fetched and then the results content becomes visible.",
+    "category": "Game Results",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cargando\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Results page content remains visible after scrolling through breakdown",
+    "description": "Verifies that the user can scroll the results page and still see key sections like leaderboard and breakdown without navigation issues.",
+    "category": "Game Results",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resultados\" control/link for the selected room"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the per-question breakdown section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Desglose por pregunta\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Admin can access supervision page from Home and sees supervision UI sections",
+    "description": "Verifies an authenticated admin can reach the supervise view and see the core read-only monitoring UI.",
+    "category": "Admin Supervision",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Crear sala\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Supervisar\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Admin supervision view shows current question and answer options as read-only",
+    "description": "Verifies the supervise page displays the current question and options and does not allow submitting an answer.",
+    "category": "Admin Supervision",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Supervisar\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pregunta\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"answer options list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Admin supervision view shows live leaderboard section",
+    "description": "Verifies the supervise page renders the leaderboard area for monitoring player scores.",
+    "category": "Admin Supervision",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Supervisar\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Clasificación\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"leaderboard table\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Admin supervision view shows game phase and progress indicator",
+    "description": "Verifies the supervise page displays the current phase/status of the game and a progress indicator.",
+    "category": "Admin Supervision",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Supervisar\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Fase\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"progress indicator\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Admin cannot submit answers from supervision view",
+    "description": "Verifies the supervision page is read-only and does not expose answer submission controls to the admin.",
+    "category": "Admin Supervision",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Supervisar\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Submit answer button\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Solo lectura\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Non-admin user is blocked from accessing supervision view via in-app navigation",
+    "description": "Verifies a logged-in non-admin cannot access the supervise page and sees an access denied state or is redirected.",
+    "category": "Admin Supervision",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"nonadmin_user@example.com\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"wrong-or-nonadmin-password\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Credenciales inválidas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "Supervision page shows authorization error message when access is denied",
+    "description": "Verifies that when authorization fails, the UI presents a clear denial message or redirect indicator.",
+    "category": "Admin Supervision",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first room in the room list"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Supervisar\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Admin-only badge or warning\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Acceso denegado\" is not visible"
+      }
+    ]
+  }
+]

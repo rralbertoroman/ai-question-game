@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "post api auth register valid user",
+    "description": "Test user registration with valid username, email, password, and confirmPassword. Verify response 201 with user details and role assignment (first user as admin, others as candidates) and auth_session cookie set."
+  },
+  {
+    "id": "TC002",
+    "title": "post api auth register invalid input",
+    "description": "Test user registration with invalid inputs such as username too short or passwords mismatch. Verify response 400 with validation error details."
+  },
+  {
+    "id": "TC003",
+    "title": "post api auth register duplicate username or email",
+    "description": "Test user registration with already registered username or email. Verify response 400 with appropriate error message indicating duplicate username or email."
+  },
+  {
+    "id": "TC004",
+    "title": "post api auth login valid credentials",
+    "description": "Test user login with valid username and password. Verify response 200 with user details and auth_session cookie set."
+  },
+  {
+    "id": "TC005",
+    "title": "post api auth login invalid credentials",
+    "description": "Test user login with invalid username or password. Verify response 401 with error message indicating invalid credentials."
+  },
+  {
+    "id": "TC006",
+    "title": "post api auth logout valid session",
+    "description": "Test user logout with valid auth_session cookie. Verify response 200 with success true and auth_session cookie cleared."
+  },
+  {
+    "id": "TC007",
+    "title": "post api auth logout without session",
+    "description": "Test user logout without auth_session cookie. Verify response 401 unauthorized error."
+  },
+  {
+    "id": "TC008",
+    "title": "get api auth session with valid session",
+    "description": "Test retrieving current user session with valid auth_session cookie. Verify response 200 with user and session details."
+  },
+  {
+    "id": "TC009",
+    "title": "get api auth session without session",
+    "description": "Test retrieving current user session without auth_session cookie. Verify response 401 unauthorized error."
+  },
+  {
+    "id": "TC010",
+    "title": "post api rooms create room as admin",
+    "description": "Test creating a new game room with valid name and participantLimit as admin user. Verify response 201 with success true and room details."
+  }
+]

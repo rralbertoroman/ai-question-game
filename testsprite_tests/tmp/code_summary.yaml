@@ -1,0 +1,168 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript 5
+  - Next.js 16 (App Router)
+  - React 19
+  - Tailwind CSS 4
+  - Server-Sent Events (SSE) for real-time updates
+routes:
+  - path: /login
+    file: app/(auth)/login/page.tsx
+    auth_required: false
+    description: User login page with username and password fields (Spanish UI)
+  - path: /register
+    file: app/(auth)/register/page.tsx
+    auth_required: false
+    description: User registration page with username, email, password, confirmPassword fields (Spanish UI)
+  - path: /
+    file: app/page.tsx
+    auth_required: true
+    description: Home page showing room list and create room button (admin only)
+  - path: /rooms/{roomId}/play
+    file: app/rooms/[roomId]/play/page.tsx
+    auth_required: true
+    description: Game play page with question/summary/finished phases and real-time SSE updates
+  - path: /rooms/{roomId}/results
+    file: app/rooms/[roomId]/results/page.tsx
+    auth_required: true
+    description: Game results page with leaderboard and per-question breakdown
+  - path: /rooms/{roomId}/supervise
+    file: app/rooms/[roomId]/supervise/page.tsx
+    auth_required: true
+    description: Admin-only live monitoring view of a game in progress
+features:
+  - name: User Login
+    description: Login with username and password. Sets HTTP-only auth_session cookie. Redirects to home on success.
+    files:
+      - app/(auth)/login/page.tsx
+      - components/auth/LoginForm.tsx
+    entry_route: /login
+    user_interactions:
+      - Fill 'Nombre de usuario' input field with username
+      - Fill 'Contraseña' input field with password
+      - Click 'Iniciar Sesión' button to submit
+      - See error message on invalid credentials (generic, no user enumeration)
+      - See 'Iniciando sesión...' loading state during submission
+      - Redirected to home page (/) on successful login
+      - Click 'Registrarse' link to navigate to registration
+    api_calls:
+      - method: POST
+        endpoint: /api/auth/login
+    auth_required: false
+
+  - name: User Registration
+    description: Create new account with username, email, password, and confirmPassword. First user becomes admin.
+    files:
+      - app/(auth)/register/page.tsx
+      - components/auth/RegisterForm.tsx
+      - components/auth/PasswordInput.tsx
+      - components/auth/PasswordRequirements.tsx
+    entry_route: /register
+    user_interactions:
+      - Fill 'Nombre de usuario' input (3-20 chars, alphanumeric + underscores)
+      - Fill 'Correo electrónico' input with valid email
+      - Fill 'Contraseña' input (min 8 chars, shows password requirements)
+      - Fill 'Confirmar contraseña' input (must match password)
+      - Click 'Registrarse' button to submit
+      - See field-level validation errors (e.g., 'Nombre de usuario ya registrado')
+      - See 'Creando cuenta...' loading state during submission
+      - Redirected to home page (/) on successful registration
+      - Click 'Iniciar Sesión' link to navigate to login
+    api_calls:
+      - method: POST
+        endpoint: /api/auth/register
+    auth_required: false
+
+  - name: Room List and Creation
+    description: View available game rooms on home page. Admin users see a create room button. Shows room cards with status, participant count, and join option.
+    files:
+      - app/page.tsx
+      - components/rooms/RoomList.tsx
+      - components/rooms/RoomCard.tsx
+      - components/rooms/CreateRoomButton.tsx
+    entry_route: /
+    user_interactions:
+      - See 'Bienvenido, {username}' greeting at top
+      - View list of room cards showing room name, status, participant count
+      - Click a room card to join or view details
+      - Admin sees '+ Crear Sala' button
+      - Admin clicks create button, enters room name and participant limit, submits
+      - Click 'Cerrar Sesión' (logout) button in header
+    api_calls:
+      - method: GET
+        endpoint: /api/rooms
+      - method: POST
+        endpoint: /api/rooms
+      - method: POST
+        endpoint: /api/rooms/{roomId}/join
+    auth_required: true
+
+  - name: Game Play
+    description: Interactive quiz game with timed questions, answer selection, summary phases, and real-time leaderboard via SSE.
+    files:
+      - app/rooms/[roomId]/play/page.tsx
+      - components/game/GamePlay.tsx
+      - components/game/QuestionPhase.tsx
+      - components/game/SummaryPhase.tsx
+      - components/game/FinishedPhase.tsx
+      - components/game/TimerDisplay.tsx
+      - components/game/ProgressBar.tsx
+      - components/game/Leaderboard.tsx
+    entry_route: /rooms/{roomId}/play
+    user_interactions:
+      - See question text with 4 answer options (shuffled per room)
+      - See countdown timer (30 seconds per question)
+      - Click an answer option to submit (optimistic UI feedback)
+      - See progress bar showing question number out of 10
+      - After answering or timeout, see summary with correct answer highlighted
+      - See leaderboard with current scores during summary
+      - After 10 questions, see finished phase with final results
+      - Click to navigate to results page
+    api_calls:
+      - method: GET
+        endpoint: /api/rooms/{roomId}/game
+      - method: POST
+        endpoint: /api/rooms/{roomId}/game/answer
+      - method: GET
+        endpoint: /api/rooms/{roomId}/game/stream
+    auth_required: true
+
+  - name: Game Results
+    description: Final results page showing leaderboard and per-question breakdown after game finishes.
+    files:
+      - app/rooms/[roomId]/results/page.tsx
+      - components/game/ResultsView.tsx
+    entry_route: /rooms/{roomId}/results
+    user_interactions:
+      - See final leaderboard with rankings and scores
+      - See per-question breakdown showing correctness, difficulty, category
+      - Navigate back to home page
+    api_calls:
+      - method: GET
+        endpoint: /api/rooms/{roomId}/game/results
+    auth_required: true
+
+  - name: Admin Supervision
+    description: Admin-only read-only view to monitor a game in progress with live leaderboard and question visibility.
+    files:
+      - app/rooms/[roomId]/supervise/page.tsx
+      - components/game/AdminSupervision.tsx
+    entry_route: /rooms/{roomId}/supervise
+    user_interactions:
+      - See current question and answer options (read-only, cannot answer)
+      - See live leaderboard with real-time score updates
+      - See game phase and progress
+    api_calls:
+      - method: GET
+        endpoint: /api/rooms/{roomId}/game
+      - method: GET
+        endpoint: /api/rooms/{roomId}/game/stream
+    auth_required: true
+known_limitations:
+  - issue: Game play requires minimum 2 participants and real-time SSE, which may be difficult to test with a single browser session
+    location: components/game/GamePlay.tsx
+    impact: Full game flow testing requires multi-user coordination
+  - issue: All UI text is in Spanish; no i18n system - strings are hardcoded
+    location: components/
+    impact: Tests must use Spanish text for assertions and interactions

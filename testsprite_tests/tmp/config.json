@@ -1,0 +1,17 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000/login",
+  "executionArgs": {
+    "projectName": "ai-question-game",
+    "projectPath": "/home/leibniz/ai-question-game",
+    "testIds": [],
+    "additionalInstruction": "UI is entirely in Spanish. Login: fields 'Nombre de usuario' and 'Contraseña', button 'Iniciar Sesión'. Register: fields 'Nombre de usuario', 'Correo electrónico', 'Contraseña', 'Confirmar contraseña', button 'Registrarse'. Home page shows 'Bienvenido, {username}'. Admin sees '+ Crear Sala' button. Dark theme with cyan accents. First registered user becomes admin. Game has 30s question timer and 8s summary. Password min 8 chars. Use existing admin credentials: username 'admin', password 'changeme'. For non-admin tests, register a new user with a random suffix. The login form field for username has the label 'Nombre de usuario' not 'Usuario'. The logout button text is 'Cerrar Sesión' in the header.",
+    "envs": {
+      "API_KEY": "sk-user-fjriIJy3wtuZzO4kw-7qRzOc8O5E9LF1e7DjIpkp9j_oCq5HKKa3JI8U8BXa6V22tOSavXmYpp-jRsAFsx17u17Y8fJeSCG2zLqVYCntx_lBrUmeFBSBtU5Q_j25OREhBXA"
+    }
+  },
+  "serverPort": 45775,
+  "proxy": "http://3b532fce-38b5-4a07-8b3a-0845f97b9430:AJrgQ4FgUPjrnVS97hslvgneAJuIhs7k@tun.testsprite.com:8080"
+}
