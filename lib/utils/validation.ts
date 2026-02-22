@@ -30,7 +30,10 @@ export const registerSchema = z.object({
  * Login form validation schema
  */
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().refine(
+    (val) => val.includes('@'),
+    'Please enter your email address, not your username'
+  ).pipe(z.string().email('Invalid email address')),
   password: z.string().min(1, 'Password is required'),
 });
 

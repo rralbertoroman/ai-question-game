@@ -81,7 +81,7 @@ export default function LoginForm() {
         </label>
         <input
           id="email"
-          type="email"
+          type="text"
           value={formData.email}
           onChange={(e) => handleChange('email', e.target.value)}
           className={`w-full px-4 py-2 bg-gray-800 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white ${
