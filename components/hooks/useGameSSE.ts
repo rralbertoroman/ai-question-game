@@ -67,7 +67,7 @@ export function useGameSSE({
       // EventSource auto-reconnects on error.
       // Only set error if connection is fully closed.
       if (es.readyState === EventSource.CLOSED) {
-        setError('Connection lost');
+        setError('Conexión perdida');
       }
     };
 

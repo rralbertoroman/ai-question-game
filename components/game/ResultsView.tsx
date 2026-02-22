@@ -47,20 +47,20 @@ export default function ResultsView({
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">{roomName}</h1>
-            <p className="text-sm text-gray-500">Game Results</p>
+            <p className="text-sm text-gray-500">Resultados del Juego</p>
           </div>
           <button
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors cursor-pointer text-sm"
           >
-            Back to Rooms
+            Volver a las Salas
           </button>
         </div>
 
         {/* Leaderboard */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-cyan-400 mb-4">
-            Final Standings
+            Clasificación Final
           </h2>
           <div className="space-y-2">
             {leaderboard.map((entry, index) => {
@@ -87,7 +87,7 @@ export default function ResultsView({
                   >
                     {entry.username}
                     {isMe && (
-                      <span className="ml-2 text-xs text-cyan-400">(you)</span>
+                      <span className="ml-2 text-xs text-cyan-400">(tú)</span>
                     )}
                   </span>
                   <span className="font-mono text-lg text-yellow-400 font-bold">
@@ -102,7 +102,7 @@ export default function ResultsView({
         {/* Question breakdown */}
         <div>
           <h2 className="text-lg font-semibold text-purple-400 mb-4">
-            Question Breakdown
+            Desglose de Preguntas
           </h2>
           <div className="space-y-4">
             {results.questions.map((q, index) => (
@@ -129,7 +129,7 @@ export default function ResultsView({
                 </div>
 
                 <p className="text-xs text-green-400 mb-2">
-                  Correct: {answerLabels[q.correctIndex]}. {q.answers[q.correctIndex]}
+                  Correcta: {answerLabels[q.correctIndex]}. {q.answers[q.correctIndex]}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
@@ -146,7 +146,7 @@ export default function ResultsView({
                     >
                       {pr.username}:{' '}
                       {pr.answerIndex === null
-                        ? 'timeout'
+                        ? 'sin respuesta'
                         : answerLabels[pr.answerIndex]}
                     </span>
                   ))}

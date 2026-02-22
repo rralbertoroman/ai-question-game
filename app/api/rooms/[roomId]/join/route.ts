@@ -9,19 +9,19 @@ export const POST = apiHandler(
   { auth: 'user', room: true },
   async (ctx) => {
     if (ctx.room!.status !== 'open') {
-      conflict('Room is not open for joining');
+      conflict('La sala no está abierta para unirse');
     }
 
     // Check if already a participant
     const existing = await findParticipant(ctx.roomId!, ctx.user!.id);
     if (existing) {
-      conflict('Already joined this room');
+      conflict('Ya estás en esta sala');
     }
 
     // Check participant limit
     const currentCount = await getParticipantCount(ctx.roomId!);
     if (currentCount >= ctx.room!.participantLimit) {
-      conflict('Room is full');
+      conflict('La sala está llena');
     }
 
     await db.insert(roomParticipants).values({

@@ -5,8 +5,8 @@ export default function PlayError({ error, reset }: { error: Error & { digest?: 
     <ErrorBoundaryFallback
       error={error}
       reset={reset}
-      title="Game Error"
-      description="Something went wrong during the game. Try again to reconnect."
+      title="Error del Juego"
+      description="Algo salió mal durante el juego. Intenta de nuevo para reconectarte."
     />
   );
 }

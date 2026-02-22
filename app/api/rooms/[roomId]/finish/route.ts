@@ -9,7 +9,7 @@ export const POST = apiHandler(
   { auth: 'admin', room: true },
   async (ctx) => {
     if (ctx.room!.status !== 'playing') {
-      conflict('Game is not in progress');
+      conflict('El juego no está en curso');
     }
 
     await db.transaction(async (tx) => {

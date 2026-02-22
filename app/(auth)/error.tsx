@@ -5,8 +5,8 @@ export default function AuthError({ error, reset }: { error: Error & { digest?: 
     <ErrorBoundaryFallback
       error={error}
       reset={reset}
-      title="Authentication Error"
-      description="There was a problem with the authentication page. Please try again."
+      title="Error de Autenticación"
+      description="Hubo un problema con la página de autenticación. Por favor, inténtalo de nuevo."
     />
   );
 }

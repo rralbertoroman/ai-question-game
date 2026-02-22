@@ -49,13 +49,13 @@ export default async function Home() {
           <div className="flex items-center gap-3">
             <AiChipIcon size={32} className="text-cyan-400" />
             <div>
-              <h1 className="text-3xl font-bold text-gradient-animated">Challenge Rooms</h1>
+              <h1 className="text-3xl font-bold text-gradient-animated">Salas de Desafío</h1>
               <p className="text-sm text-gray-500">Día Tecnológico: AI</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-gray-400">
-              Welcome, {user.username}
+              Bienvenido, {user.username}
               {isAdmin && (
                 <span className="ml-2 text-xs bg-cyan-600 text-white px-2 py-0.5 rounded">
                   Admin

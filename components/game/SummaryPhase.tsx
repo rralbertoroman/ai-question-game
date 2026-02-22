@@ -56,7 +56,7 @@ export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
       {/* Player results */}
       <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
         <h3 className="text-sm text-purple-400 uppercase tracking-wider mb-3">
-          Results
+          Resultados
         </h3>
         <div className="space-y-2">
           {summary.playerResults.map((result, index) => {
@@ -72,7 +72,7 @@ export default function SummaryPhase({ summary, timeRemainingMs }: Props) {
                 <span className="text-gray-300">{result.username}</span>
                 <span>
                   {timedOut ? (
-                    <span className="text-gray-500 italic">Timed out</span>
+                    <span className="text-gray-500 italic">Tiempo agotado</span>
                   ) : isCorrect ? (
                     <span className="text-green-400">
                       {answerLabels[result.answerIndex!]} \u2713

@@ -12,7 +12,7 @@ export default function ProgressBar({ current, total }: Props) {
     <div className="mb-6">
       <div className="flex items-center justify-between mb-1">
         <span className="text-sm text-gray-400">
-          Question {current} of {total}
+          Pregunta {current} de {total}
         </span>
         <span className="text-sm text-gray-500">
           {Math.round(fraction * 100)}%

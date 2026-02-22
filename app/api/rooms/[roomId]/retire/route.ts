@@ -9,7 +9,7 @@ export const POST = apiHandler(
   { auth: 'user', room: true },
   async (ctx) => {
     if (ctx.room!.status !== 'open') {
-      conflict('Cannot leave a room that is not open');
+      conflict('No puedes salir de una sala que no está abierta');
     }
 
     const deleted = await db
@@ -23,7 +23,7 @@ export const POST = apiHandler(
       .returning();
 
     if (deleted.length === 0) {
-      notFound('Not a participant in this room');
+      notFound('No eres participante de esta sala');
     }
 
     return NextResponse.json({ success: true });

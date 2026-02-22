@@ -5,8 +5,8 @@ export default function SuperviseError({ error, reset }: { error: Error & { dige
     <ErrorBoundaryFallback
       error={error}
       reset={reset}
-      title="Supervision Error"
-      description="Could not load the supervision view. Please try again."
+      title="Error de Supervisión"
+      description="No se pudo cargar la vista de supervisión. Por favor, inténtalo de nuevo."
     />
   );
 }

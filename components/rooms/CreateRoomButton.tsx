@@ -27,7 +27,7 @@ export default function CreateRoomButton() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create room');
+        throw new Error(data.error || 'Error al crear la sala');
       }
 
       setName('');
@@ -35,7 +35,7 @@ export default function CreateRoomButton() {
       setIsOpen(false);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create room');
+      setError(err instanceof Error ? err.message : 'Error al crear la sala');
     } finally {
       setLoading(false);
     }
@@ -47,25 +47,25 @@ export default function CreateRoomButton() {
         onClick={() => setIsOpen(true)}
         className="mb-6 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors cursor-pointer"
       >
-        + Create Room
+        + Crear Sala
       </button>
     );
   }
 
   return (
     <div className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg animate-fade-in-up">
-      <h3 className="text-lg font-semibold text-white mb-4">Create New Room</h3>
+      <h3 className="text-lg font-semibold text-white mb-4">Crear Nueva Sala</h3>
 
       <InlineError message={error} className="mb-4" onDismiss={() => setError('')} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Room Name</label>
+          <label className="block text-sm text-gray-400 mb-1">Nombre de la Sala</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. AI Challenge Round 1"
+            placeholder="ej. Desafío IA Ronda 1"
             required
             minLength={3}
             maxLength={100}
@@ -75,7 +75,7 @@ export default function CreateRoomButton() {
 
         <div>
           <label className="block text-sm text-gray-400 mb-1">
-            Participant Limit
+            Límite de Participantes
           </label>
           <input
             type="number"
@@ -93,7 +93,7 @@ export default function CreateRoomButton() {
             disabled={loading}
             className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors cursor-pointer disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating...' : 'Create'}
+            {loading ? 'Creando...' : 'Crear'}
           </button>
           <button
             type="button"
@@ -103,7 +103,7 @@ export default function CreateRoomButton() {
             }}
             className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors cursor-pointer"
           >
-            Cancel
+            Cancelar
           </button>
         </div>
       </form>

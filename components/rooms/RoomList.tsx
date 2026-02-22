@@ -50,13 +50,13 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
       } else {
         failCountRef.current++;
         if (failCountRef.current === 2) {
-          addToast('error', 'Having trouble refreshing room list');
+          addToast('error', 'Problemas al actualizar la lista de salas');
         }
       }
     } catch {
       failCountRef.current++;
       if (failCountRef.current === 2) {
-        addToast('error', 'Having trouble refreshing room list');
+        addToast('error', 'Problemas al actualizar la lista de salas');
       }
     }
   }, [addToast]);
@@ -69,7 +69,7 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
   if (rooms.length === 0 && finishedRooms.length === 0) {
     return (
       <p className="text-gray-500 text-center py-12">
-        No rooms available yet.
+        Aún no hay salas disponibles.
       </p>
     );
   }
@@ -96,7 +96,7 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
 
       {isAdmin && finishedRooms.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-400 mb-4">Finished Games</h2>
+          <h2 className="text-lg font-semibold text-gray-400 mb-4">Partidas Finalizadas</h2>
           <div className="grid gap-4">
             {finishedRooms.map((room, index) => (
               <div

@@ -36,10 +36,10 @@ export default function GamePlay({ roomId, userId }: Props) {
         await refetch();
         return true;
       }
-      addToast('error', 'Failed to submit answer');
+      addToast('error', 'Error al enviar respuesta');
       return false;
     } catch {
-      addToast('error', 'Failed to submit answer');
+      addToast('error', 'Error al enviar respuesta');
       return false;
     }
   };
@@ -47,7 +47,7 @@ export default function GamePlay({ roomId, userId }: Props) {
   if (!gameState) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 flex items-center justify-center">
-        <div className="text-gray-400 animate-glow-pulse">Loading game...</div>
+        <div className="text-gray-400 animate-glow-pulse">Cargando juego...</div>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function GamePlay({ roomId, userId }: Props) {
             onClick={() => router.push('/')}
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
           >
-            Exit
+            Salir
           </button>
         </div>
 
@@ -106,7 +106,7 @@ export default function GamePlay({ roomId, userId }: Props) {
 
         {gameState.phase === 'waiting' && (
           <div className="text-center py-12 text-gray-400">
-            Waiting for game to start...
+            Esperando a que comience el juego...
           </div>
         )}
 

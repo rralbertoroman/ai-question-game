@@ -18,7 +18,7 @@ export const POST = apiHandler(
     });
 
     if (existingUsername) {
-      badRequest('Username already taken');
+      badRequest('Nombre de usuario ya registrado');
     }
 
     // Check if email already exists
@@ -27,7 +27,7 @@ export const POST = apiHandler(
     });
 
     if (existingEmail) {
-      badRequest('Email already registered');
+      badRequest('Correo electrónico ya registrado');
     }
 
     // Check if this is the first user (becomes admin)
@@ -63,7 +63,7 @@ export const POST = apiHandler(
           email: newUser.email,
           role: newUser.role,
         },
-        message: isFirstUser ? 'Admin account created successfully' : 'Account created successfully',
+        message: isFirstUser ? 'Admin cuenta creada exitosamente' : 'Cuenta creada exitosamente',
       },
       { status: 201 }
     );

@@ -40,7 +40,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
   if (!gameState) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 flex items-center justify-center">
-        <div className="text-gray-400 animate-glow-pulse">Loading supervision view...</div>
+        <div className="text-gray-400 animate-glow-pulse">Cargando vista de supervisión...</div>
       </div>
     );
   }
@@ -52,12 +52,12 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
         <div className="mb-4 p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded">
-              SUPERVISING
+              SUPERVISANDO
             </span>
-            <span className="text-sm text-purple-300">{roomName} &mdash; Read-only</span>
+            <span className="text-sm text-purple-300">{roomName} &mdash; Solo lectura</span>
           </div>
           <span className="text-xs text-gray-500">
-            Phase: {gameState.phase} | Q{gameState.currentQuestionIndex + 1}/{gameState.totalQuestions}
+            Fase: {gameState.phase} | Q{gameState.currentQuestionIndex + 1}/{gameState.totalQuestions}
           </span>
         </div>
 
@@ -68,7 +68,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
             onClick={() => router.push('/')}
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
           >
-            Exit
+            Salir
           </button>
         </div>
 
@@ -114,7 +114,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
 
             <div className="text-center text-sm text-gray-500">
               <span className="text-purple-400">
-                {gameState.answeredCount}/{gameState.totalPlayers} players answered
+                {gameState.answeredCount}/{gameState.totalPlayers} jugadores respondieron
               </span>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
         {/* Waiting phase */}
         {gameState.phase === 'waiting' && (
           <div className="text-center py-12 text-gray-400">
-            Waiting for game to start...
+            Esperando a que comience el juego...
           </div>
         )}
 

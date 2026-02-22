@@ -57,7 +57,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
         method,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `Failed to ${action}`);
+      if (!res.ok) throw new Error(data.error || `Error al ${action}`);
 
       if (data.gameStarted) {
         router.push(`/rooms/${room.id}/play`);
@@ -66,10 +66,17 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
 
       onUpdate();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : `Failed to ${action}`);
+      setError(err instanceof Error ? err.message : `Error al ${action}`);
     } finally {
       setLoading(null);
     }
+  };
+
+  const statusLabel: Record<string, string> = {
+    open: 'abierta',
+    playing: 'en juego',
+    finished: 'finalizada',
+    closed: 'cerrada',
   };
 
   const statusColor: Record<string, string> = {
@@ -90,17 +97,17 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
         <span
           className={`text-xs px-2 py-1 rounded border ${statusColor[room.status] || statusColor.closed}`}
         >
-          {room.status}
+          {statusLabel[room.status] || room.status}
         </span>
       </div>
 
       {/* Participants */}
       <div className="mb-4">
         <p className="text-sm text-gray-400 mb-2">
-          Players: {room.participants.length}/{room.participantLimit}
+          Jugadores: {room.participants.length}/{room.participantLimit}
           {allReady && room.status === 'open' && (
             <span className="ml-2 text-cyan-400 font-semibold">
-              All Ready!
+              ¡Todos Listos!
             </span>
           )}
         </p>
@@ -136,7 +143,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                 disabled={loading !== null}
                 className="px-4 py-1.5 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded transition-colors cursor-pointer disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
-                {loading === 'join' ? 'Joining...' : 'Join'}
+                {loading === 'join' ? 'Uniéndose...' : 'Unirse'}
               </button>
             )}
 
@@ -152,10 +159,10 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                   }`}
                 >
                   {loading === 'ready'
-                    ? 'Updating...'
+                    ? 'Actualizando...'
                     : myParticipant?.ready
-                      ? 'Ready \u2713'
-                      : 'Ready?'}
+                      ? 'Listo \u2713'
+                      : '¿Listo?'}
                 </button>
 
                 <button
@@ -163,7 +170,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                   disabled={loading !== null}
                   className="px-4 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading === 'retire' ? 'Leaving...' : 'Leave'}
+                  {loading === 'retire' ? 'Saliendo...' : 'Salir'}
                 </button>
               </>
             )}
@@ -175,7 +182,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                 disabled={loading !== null || room.participants.length < 2}
                 className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded transition-colors cursor-pointer disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
-                {loading === 'start' ? 'Starting...' : 'Start Game'}
+                {loading === 'start' ? 'Iniciando...' : 'Iniciar Juego'}
               </button>
             )}
           </>
@@ -188,7 +195,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                 onClick={() => router.push(`/rooms/${room.id}/play`)}
                 className="px-4 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors cursor-pointer"
               >
-                Enter Game
+                Entrar al Juego
               </button>
             )}
             {isAdmin && (
@@ -197,14 +204,14 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
                   onClick={() => router.push(`/rooms/${room.id}/supervise`)}
                   className="px-4 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors cursor-pointer"
                 >
-                  Supervise
+                  Supervisar
                 </button>
                 <button
                   onClick={() => doAction('finish')}
                   disabled={loading !== null}
                   className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading === 'finish' ? 'Finishing...' : 'End Game'}
+                  {loading === 'finish' ? 'Finalizando...' : 'Terminar Juego'}
                 </button>
               </>
             )}
@@ -216,7 +223,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
             onClick={() => router.push(`/rooms/${room.id}/results`)}
             className="px-4 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors cursor-pointer"
           >
-            Review Results
+            Ver Resultados
           </button>
         )}
 
@@ -224,14 +231,14 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
         {isAdmin && (
           <button
             onClick={() => {
-              if (confirm('Delete this room? This cannot be undone.')) {
+              if (confirm('¿Eliminar esta sala? Esta acción no se puede deshacer.')) {
                 doAction('delete', 'DELETE', `/api/rooms/${room.id}`);
               }
             }}
             disabled={loading !== null}
             className="px-4 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
           >
-            {loading === 'delete' ? 'Deleting...' : 'Delete'}
+            {loading === 'delete' ? 'Eliminando...' : 'Eliminar'}
           </button>
         )}
       </div>

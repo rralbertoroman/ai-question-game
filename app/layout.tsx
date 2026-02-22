@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Avangenio AI Challenge | Día Tecnológico: AI",
-  description: "Multiplayer AI knowledge challenge for Día Tecnológico: AI — powered by Avangenio",
+  description: "Desafío multijugador de conocimientos de IA para Día Tecnológico: AI — desarrollado por Avangenio",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
