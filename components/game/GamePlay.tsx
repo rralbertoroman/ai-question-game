@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameSSE } from '@/components/hooks/useGameSSE';
+import { useToast } from '@/components/toast/useToast';
+import InlineError from '@/components/error/InlineError';
 import QuestionPhase from './QuestionPhase';
 import SummaryPhase from './SummaryPhase';
 import FinishedPhase from './FinishedPhase';
@@ -16,14 +17,12 @@ interface Props {
 
 export default function GamePlay({ roomId, userId }: Props) {
   const router = useRouter();
-  const [submitError, setSubmitError] = useState('');
+  const { addToast } = useToast();
 
   const { gameState, error: sseError, refetch } = useGameSSE({
     roomId,
     enabled: true,
   });
-
-  const error = submitError || sseError;
 
   const handleSubmitAnswer = async (answerIndex: number): Promise<boolean> => {
     try {
@@ -37,9 +36,10 @@ export default function GamePlay({ roomId, userId }: Props) {
         await refetch();
         return true;
       }
+      addToast('error', 'Failed to submit answer');
       return false;
     } catch {
-      setSubmitError('Failed to submit answer');
+      addToast('error', 'Failed to submit answer');
       return false;
     }
   };
@@ -66,11 +66,7 @@ export default function GamePlay({ roomId, userId }: Props) {
           </button>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-400 text-sm">
-            {error}
-          </div>
-        )}
+        <InlineError message={sseError} className="mb-4" />
 
         {/* Progress bar (during question/summary) */}
         {(gameState.phase === 'question' || gameState.phase === 'summary') && (

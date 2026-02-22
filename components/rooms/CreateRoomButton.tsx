@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import InlineError from '@/components/error/InlineError';
 
 export default function CreateRoomButton() {
   const router = useRouter();
@@ -55,11 +56,7 @@ export default function CreateRoomButton() {
     <div className="mb-6 p-6 bg-gray-800/50 border border-gray-700 rounded-lg animate-fade-in-up">
       <h3 className="text-lg font-semibold text-white mb-4">Create New Room</h3>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-400 text-sm">
-          {error}
-        </div>
-      )}
+      <InlineError message={error} className="mb-4" onDismiss={() => setError('')} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

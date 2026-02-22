@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import InlineError from '@/components/error/InlineError';
 
 interface Participant {
   id: number;
@@ -122,11 +123,7 @@ export default function RoomCard({ room, currentUser, onUpdate }: Props) {
         )}
       </div>
 
-      {error && (
-        <div className="mb-3 p-2 bg-red-500/10 border border-red-500/50 rounded text-red-400 text-xs">
-          {error}
-        </div>
-      )}
+      <InlineError message={error} className="mb-3" onDismiss={() => setError('')} />
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">

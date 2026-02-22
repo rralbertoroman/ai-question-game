@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/toast/useToast';
 
 export default function LogoutButton() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -14,6 +16,7 @@ export default function LogoutButton() {
       router.push('/login');
       router.refresh();
     } catch {
+      addToast('error', 'Failed to log out. Please try again.');
       setLoading(false);
     }
   };

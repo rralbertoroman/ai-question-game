@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { GAME_CONFIG } from '@/lib/game/config';
 import { usePolling } from '@/components/hooks/usePolling';
+import { useToast } from '@/components/toast/useToast';
 import RoomCard from './RoomCard';
 
 interface Participant {
@@ -33,6 +34,8 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
   const [rooms, setRooms] = useState<Room[]>(initialRooms);
   const [finishedRooms, setFinishedRooms] = useState<Room[]>(initialFinishedRooms);
   const isAdmin = currentUser.role === 'admin';
+  const { addToast } = useToast();
+  const failCountRef = useRef(0);
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -43,11 +46,20 @@ export default function RoomList({ initialRooms, initialFinishedRooms = [], curr
         if (data.finishedRooms) {
           setFinishedRooms(data.finishedRooms);
         }
+        failCountRef.current = 0;
+      } else {
+        failCountRef.current++;
+        if (failCountRef.current === 2) {
+          addToast('error', 'Having trouble refreshing room list');
+        }
       }
     } catch {
-      // Silently retry on next interval
+      failCountRef.current++;
+      if (failCountRef.current === 2) {
+        addToast('error', 'Having trouble refreshing room list');
+      }
     }
-  }, []);
+  }, [addToast]);
 
   const { trigger } = usePolling({
     callback: fetchRooms,

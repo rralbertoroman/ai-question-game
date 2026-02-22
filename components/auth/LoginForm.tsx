@@ -7,6 +7,7 @@ import { loginSchema } from '@/lib/utils/validation';
 import { useFieldErrors } from '@/hooks/useFieldErrors';
 import PasswordInput from './PasswordInput';
 import FieldError from './FieldError';
+import InlineError from '@/components/error/InlineError';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -69,11 +70,7 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {generalError && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
-          {generalError}
-        </div>
-      )}
+      <InlineError message={generalError} onDismiss={() => setGeneralError('')} />
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">

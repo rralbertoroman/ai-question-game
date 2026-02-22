@@ -8,9 +8,12 @@ import { useFieldErrors } from '@/hooks/useFieldErrors';
 import PasswordInput from './PasswordInput';
 import FieldError from './FieldError';
 import PasswordRequirements from './PasswordRequirements';
+import InlineError from '@/components/error/InlineError';
+import { useToast } from '@/components/toast/useToast';
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -64,7 +67,7 @@ export default function RegisterForm() {
 
       // Show success message if first user
       if (data.message?.includes('Admin')) {
-        alert('You are the first user and have been granted admin privileges!');
+        addToast('success', 'You are the first user and have been granted admin privileges!');
       }
 
       router.push('/');
@@ -78,11 +81,7 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {generalError && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
-          {generalError}
-        </div>
-      )}
+      <InlineError message={generalError} onDismiss={() => setGeneralError('')} />
 
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
