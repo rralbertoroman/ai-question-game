@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file=.env.local scripts/seed-questions.ts",
     "db:import-questions": "tsx --env-file=.env.local scripts/import-questions.ts",
-    "db:refresh-questions": "tsx --env-file=.env.local scripts/refresh-questions.ts"
+    "db:refresh-questions": "tsx --env-file=.env.local scripts/refresh-questions.ts",
+    "db:export-questions": "tsx --env-file=.env.local scripts/export-questions.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
