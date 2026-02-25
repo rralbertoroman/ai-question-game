@@ -20,7 +20,7 @@ interface QuestionResult {
 }
 
 interface Props {
-  roomName: string;
+  gameId: number;
   results: {
     leaderboard: LeaderboardEntry[];
     questions: QuestionResult[];
@@ -33,27 +33,24 @@ interface Props {
 const answerLabels = ['A', 'B', 'C', 'D'];
 
 export default function ResultsView({
-  roomName,
   results,
   leaderboard,
   currentUserId,
 }: Props) {
   const router = useRouter();
-  const winner = leaderboard[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 p-4 sm:p-8">
       <div className="max-w-3xl mx-auto animate-fade-in-up">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">{roomName}</h1>
-            <p className="text-sm text-gray-500">Resultados del Juego</p>
+            <h1 className="text-2xl font-bold text-white">Resultados del Juego</h1>
           </div>
           <button
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors cursor-pointer text-sm"
           >
-            Volver a las Salas
+            Volver al Inicio
           </button>
         </div>
 

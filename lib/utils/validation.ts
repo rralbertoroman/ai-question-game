@@ -34,25 +34,10 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'La contraseña es obligatoria'),
 });
 
-export const createRoomSchema = z.object({
-  name: z
-    .string()
-    .min(3, 'El nombre de la sala debe tener al menos 3 caracteres')
-    .max(100, 'El nombre de la sala debe tener como máximo 100 caracteres')
-    .trim(),
-  participantLimit: z
-    .number()
-    .int('El límite de participantes debe ser un número entero')
-    .min(2, 'Mínimo 2 participantes')
-    .max(20, 'Máximo 20 participantes')
-    .default(6),
-});
-
 export const submitAnswerSchema = z.object({
   answerIndex: z.number().int().min(0).max(3),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type CreateRoomInput = z.infer<typeof createRoomSchema>;
 export type SubmitAnswerInput = z.infer<typeof submitAnswerSchema>;
