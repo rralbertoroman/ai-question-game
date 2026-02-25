@@ -1,4 +1,4 @@
-export type GamePhase = 'waiting' | 'question' | 'summary' | 'finished';
+export type GamePhase = 'question' | 'summary' | 'finished';
 
 // ============================================
 // Shared sub-types
@@ -34,20 +34,28 @@ export interface LeaderboardEntry {
   rank: number;
 }
 
+export interface GlobalLeaderboardEntry {
+  userId: number;
+  username: string;
+  totalScore: number;
+  gamesPlayed: number;
+  rank: number;
+}
+
 // ============================================
 // Game state — discriminated union by phase
 // ============================================
 
 interface GameStateBase {
-  roomId: string;
-  roomName: string;
+  gameId: number;
   currentQuestionIndex: number;
   totalQuestions: number;
   leaderboard: LeaderboardEntry[];
+  isParticipant: boolean;
 }
 
-export interface WaitingState extends GameStateBase {
-  phase: 'waiting';
+export interface IdleState {
+  phase: 'idle';
 }
 
 export interface QuestionState extends GameStateBase {
@@ -71,7 +79,7 @@ export interface FinishedState extends GameStateBase {
 }
 
 export type GameStateResponse =
-  | WaitingState
+  | IdleState
   | QuestionState
   | SummaryState
   | FinishedState;

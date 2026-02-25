@@ -10,8 +10,7 @@ import ProgressBar from './ProgressBar';
 import TimerDisplay from './TimerDisplay';
 
 interface Props {
-  roomId: string;
-  roomName: string;
+  gameId: number;
 }
 
 const difficultyColors: Record<string, string> = {
@@ -22,22 +21,19 @@ const difficultyColors: Record<string, string> = {
 
 const answerLabels = ['A', 'B', 'C', 'D'];
 
-export default function AdminSupervision({ roomId, roomName }: Props) {
+export default function AdminSupervision({ gameId }: Props) {
   const router = useRouter();
 
-  const { gameState } = useGameSSE({
-    roomId,
-    enabled: true,
-  });
+  const { gameState } = useGameSSE({ enabled: true });
 
   // Redirect to results when game finishes
   useEffect(() => {
     if (gameState?.phase === 'finished') {
-      router.push(`/rooms/${roomId}/results`);
+      router.push(`/results/${gameId}`);
     }
-  }, [gameState?.phase, roomId, router]);
+  }, [gameState?.phase, gameId, router]);
 
-  if (!gameState) {
+  if (!gameState || gameState.phase === 'idle') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900/95 to-black/95 flex items-center justify-center">
         <div className="text-gray-400 animate-glow-pulse">Cargando vista de supervisión...</div>
@@ -54,7 +50,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
             <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded">
               SUPERVISANDO
             </span>
-            <span className="text-sm text-purple-300">{roomName} &mdash; Solo lectura</span>
+            <span className="text-sm text-purple-300">Solo lectura</span>
           </div>
           <span className="text-xs text-gray-500">
             Fase: {gameState.phase} | Q{gameState.currentQuestionIndex + 1}/{gameState.totalQuestions}
@@ -63,7 +59,7 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-white">{gameState.roomName}</h1>
+          <h1 className="text-xl font-bold text-white">Juego en Curso</h1>
           <button
             onClick={() => router.push('/')}
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
@@ -126,13 +122,6 @@ export default function AdminSupervision({ roomId, roomName }: Props) {
             summary={gameState.summary}
             timeRemainingMs={gameState.timeRemainingMs}
           />
-        )}
-
-        {/* Waiting phase */}
-        {gameState.phase === 'waiting' && (
-          <div className="text-center py-12 text-gray-400">
-            Esperando a que comience el juego...
-          </div>
         )}
 
         {/* Leaderboard */}

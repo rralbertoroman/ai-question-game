@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('candidate'), // 'candidate' | 'admin'
+  lastActiveAt: timestamp('last_active_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => ({
   usernameIdx: index('username_idx').on(table.username),
@@ -28,31 +29,26 @@ export const sessions = pgTable('sessions', {
 }));
 
 // ============================================
-// ROOMS TABLE
+// GAMES TABLE
 // ============================================
-export const rooms = pgTable('rooms', {
-  id: varchar('id', { length: 21 }).primaryKey(), // nanoid
-  name: varchar('name', { length: 100 }).notNull(),
-  adminId: integer('admin_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  participantLimit: integer('participant_limit').notNull().default(6),
-  status: varchar('status', { length: 20 }).notNull().default('closed'), // 'closed' | 'open' | 'playing' | 'finished'
+export const games = pgTable('games', {
+  id: serial('id').primaryKey(),
+  status: varchar('status', { length: 20 }).notNull().default('playing'), // 'playing' | 'finished'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => ({
-  adminIdIdx: index('room_admin_id_idx').on(table.adminId),
-  statusIdx: index('room_status_idx').on(table.status),
+  statusIdx: index('game_status_idx').on(table.status),
 }));
 
 // ============================================
-// ROOM PARTICIPANTS TABLE
+// GAME PARTICIPANTS TABLE
 // ============================================
-export const roomParticipants = pgTable('room_participants', {
+export const gameParticipants = pgTable('game_participants', {
   id: serial('id').primaryKey(),
-  roomId: varchar('room_id', { length: 21 }).notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  gameId: integer('game_id').notNull().references(() => games.id, { onDelete: 'cascade' }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  ready: boolean('ready').notNull().default(false),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 }, (table) => ({
-  roomUserIdx: index('room_participant_idx').on(table.roomId, table.userId),
+  gameUserIdx: index('game_participant_idx').on(table.gameId, table.userId),
 }));
 
 // ============================================
@@ -76,14 +72,14 @@ export const questions = pgTable('questions', {
 // ============================================
 export const gameStates = pgTable('game_states', {
   id: serial('id').primaryKey(),
-  roomId: varchar('room_id', { length: 21 }).notNull().unique().references(() => rooms.id, { onDelete: 'cascade' }),
+  gameId: integer('game_id').notNull().unique().references(() => games.id, { onDelete: 'cascade' }),
   currentQuestionIndex: integer('current_question_index').notNull().default(0),
   questionOrder: jsonb('question_order').notNull().$type<number[]>(), // Array of question IDs
   questionStartTime: timestamp('question_start_time', { withTimezone: true }), // Nullable - set when question starts
-  phase: varchar('phase', { length: 20 }).notNull().default('waiting'), // 'waiting' | 'question' | 'summary' | 'finished'
+  phase: varchar('phase', { length: 20 }).notNull().default('question'), // 'question' | 'summary' | 'finished'
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  roomIdIdx: index('game_state_room_idx').on(table.roomId),
+  gameIdIdx: index('game_state_game_idx').on(table.gameId),
 }));
 
 // ============================================
@@ -91,15 +87,15 @@ export const gameStates = pgTable('game_states', {
 // ============================================
 export const playerAnswers = pgTable('player_answers', {
   id: serial('id').primaryKey(),
-  roomId: varchar('room_id', { length: 21 }).notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  gameId: integer('game_id').notNull().references(() => games.id, { onDelete: 'cascade' }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   questionId: integer('question_id').notNull().references(() => questions.id, { onDelete: 'cascade' }),
   answerIndex: integer('answer_index'), // null if passed/timed out
   isCorrect: boolean('is_correct').notNull().default(false),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
 }, (table) => ({
-  roomQuestionIdx: index('answer_room_question_idx').on(table.roomId, table.questionId),
-  roomUserQuestionIdx: index('answer_room_user_question_idx').on(table.roomId, table.userId, table.questionId),
+  gameQuestionIdx: index('answer_game_question_idx').on(table.gameId, table.questionId),
+  gameUserQuestionIdx: index('answer_game_user_question_idx').on(table.gameId, table.userId, table.questionId),
 }));
 
 // ============================================
@@ -107,12 +103,12 @@ export const playerAnswers = pgTable('player_answers', {
 // ============================================
 export const scores = pgTable('scores', {
   id: serial('id').primaryKey(),
-  roomId: varchar('room_id', { length: 21 }).notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  gameId: integer('game_id').notNull().references(() => games.id, { onDelete: 'cascade' }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   score: integer('score').notNull().default(0), // Store as integer (multiply by 10, e.g., 3.5 pts = 35)
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  roomUserScoreIdx: index('score_room_user_idx').on(table.roomId, table.userId),
+  gameUserScoreIdx: index('score_game_user_idx').on(table.gameId, table.userId),
 }));
 
 // ============================================
@@ -120,8 +116,7 @@ export const scores = pgTable('scores', {
 // ============================================
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
-  ownedRooms: many(rooms),
-  participations: many(roomParticipants),
+  participations: many(gameParticipants),
   answers: many(playerAnswers),
   scores: many(scores),
 }));
@@ -133,24 +128,20 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }));
 
-export const roomsRelations = relations(rooms, ({ one, many }) => ({
-  admin: one(users, {
-    fields: [rooms.adminId],
-    references: [users.id],
-  }),
-  participants: many(roomParticipants),
+export const gamesRelations = relations(games, ({ many, one }) => ({
+  participants: many(gameParticipants),
   gameState: one(gameStates),
   answers: many(playerAnswers),
   scores: many(scores),
 }));
 
-export const roomParticipantsRelations = relations(roomParticipants, ({ one }) => ({
-  room: one(rooms, {
-    fields: [roomParticipants.roomId],
-    references: [rooms.id],
+export const gameParticipantsRelations = relations(gameParticipants, ({ one }) => ({
+  game: one(games, {
+    fields: [gameParticipants.gameId],
+    references: [games.id],
   }),
   user: one(users, {
-    fields: [roomParticipants.userId],
+    fields: [gameParticipants.userId],
     references: [users.id],
   }),
 }));
@@ -160,16 +151,16 @@ export const questionsRelations = relations(questions, ({ many }) => ({
 }));
 
 export const gameStatesRelations = relations(gameStates, ({ one }) => ({
-  room: one(rooms, {
-    fields: [gameStates.roomId],
-    references: [rooms.id],
+  game: one(games, {
+    fields: [gameStates.gameId],
+    references: [games.id],
   }),
 }));
 
 export const playerAnswersRelations = relations(playerAnswers, ({ one }) => ({
-  room: one(rooms, {
-    fields: [playerAnswers.roomId],
-    references: [rooms.id],
+  game: one(games, {
+    fields: [playerAnswers.gameId],
+    references: [games.id],
   }),
   user: one(users, {
     fields: [playerAnswers.userId],
@@ -182,9 +173,9 @@ export const playerAnswersRelations = relations(playerAnswers, ({ one }) => ({
 }));
 
 export const scoresRelations = relations(scores, ({ one }) => ({
-  room: one(rooms, {
-    fields: [scores.roomId],
-    references: [rooms.id],
+  game: one(games, {
+    fields: [scores.gameId],
+    references: [games.id],
   }),
   user: one(users, {
     fields: [scores.userId],

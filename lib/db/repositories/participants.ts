@@ -1,31 +1,20 @@
 import { db } from '@/lib/db';
-import { roomParticipants } from '@/lib/db/schema';
+import { gameParticipants } from '@/lib/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 
-export async function findParticipant(roomId: string, userId: number) {
-  return db.query.roomParticipants.findFirst({
+export async function findParticipant(gameId: number, userId: number) {
+  return db.query.gameParticipants.findFirst({
     where: and(
-      eq(roomParticipants.roomId, roomId),
-      eq(roomParticipants.userId, userId)
+      eq(gameParticipants.gameId, gameId),
+      eq(gameParticipants.userId, userId)
     ),
   });
 }
 
-export async function getParticipantCount(roomId: string): Promise<number> {
+export async function getParticipantCount(gameId: number): Promise<number> {
   const [result] = await db
     .select({ count: count() })
-    .from(roomParticipants)
-    .where(eq(roomParticipants.roomId, roomId));
-  return result.count;
-}
-
-export async function getReadyCount(roomId: string): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(roomParticipants)
-    .where(and(
-      eq(roomParticipants.roomId, roomId),
-      eq(roomParticipants.ready, true)
-    ));
+    .from(gameParticipants)
+    .where(eq(gameParticipants.gameId, gameId));
   return result.count;
 }
