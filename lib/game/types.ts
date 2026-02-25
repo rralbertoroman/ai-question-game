@@ -39,8 +39,7 @@ export interface LeaderboardEntry {
 // ============================================
 
 interface GameStateBase {
-  roomId: string;
-  roomName: string;
+  gameId: number;
   currentQuestionIndex: number;
   totalQuestions: number;
   leaderboard: LeaderboardEntry[];

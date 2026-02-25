@@ -1,12 +1,12 @@
 /**
  * Deterministic answer shuffling using a seeded PRNG.
- * Given the same (questionId, roomId), always produces the same permutation.
- * This ensures all players in a room see the same answer order.
+ * Given the same (questionId, gameId), always produces the same permutation.
+ * This ensures all players in a game see the same answer order.
  */
 
 // djb2 string hash → unsigned 32-bit integer
-function hashSeed(questionId: number, roomId: string): number {
-  const str = `${questionId}:${roomId}`;
+function hashSeed(questionId: number, gameId: number): number {
+  const str = `${questionId}:${gameId}`;
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
@@ -31,8 +31,8 @@ function mulberry32(seed: number): () => number {
  *
  * Example: [2, 0, 3, 1] means new position 0 shows original answer 2, etc.
  */
-export function getShufflePermutation(questionId: number, roomId: string): number[] {
-  const rng = mulberry32(hashSeed(questionId, roomId));
+export function getShufflePermutation(questionId: number, gameId: number): number[] {
+  const rng = mulberry32(hashSeed(questionId, gameId));
 
   const indices = [0, 1, 2, 3];
   for (let i = indices.length - 1; i > 0; i--) {

@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import {
-  rooms,
-  roomParticipants,
+  games,
+  gameParticipants,
   gameStates,
   questions,
   playerAnswers,
@@ -9,7 +9,7 @@ import {
   users,
 } from '@/lib/db/schema';
 import { eq, and, sql, inArray } from 'drizzle-orm';
-import { getParticipantCount } from '@/lib/db/repositories/participants';
+import { getPlayerCount } from '@/lib/db/repositories/game-participants';
 import { findPlayerAnswer, getAnswerCount, getQuestionAnswersWithUsers } from '@/lib/db/repositories/answers';
 import { GAME_CONFIG } from './config';
 import {
@@ -52,26 +52,24 @@ export async function selectQuestionsForGame(
 // GAME INITIALIZATION
 // ============================================
 
-export async function initializeGame(roomId: string): Promise<void> {
+export async function initializeGame(playerIds: number[]): Promise<number> {
   const questionOrder = await selectQuestionsForGame();
 
-  const participants = await db
-    .select({ userId: roomParticipants.userId })
-    .from(roomParticipants)
-    .where(eq(roomParticipants.roomId, roomId));
+  const gameId = await db.transaction(async (tx) => {
+    const [game] = await tx
+      .insert(games)
+      .values({ status: 'playing' })
+      .returning({ id: games.id });
 
-  if (participants.length < 2) {
-    throw new Error('Se necesitan al menos 2 participantes para iniciar');
-  }
-
-  await db.transaction(async (tx) => {
-    await tx
-      .update(rooms)
-      .set({ status: 'playing' })
-      .where(eq(rooms.id, roomId));
+    await tx.insert(gameParticipants).values(
+      playerIds.map((userId) => ({
+        gameId: game.id,
+        userId,
+      }))
+    );
 
     await tx.insert(gameStates).values({
-      roomId,
+      gameId: game.id,
       currentQuestionIndex: 0,
       questionOrder,
       questionStartTime: new Date(),
@@ -79,13 +77,17 @@ export async function initializeGame(roomId: string): Promise<void> {
     });
 
     await tx.insert(scores).values(
-      participants.map((p) => ({
-        roomId,
-        userId: p.userId,
+      playerIds.map((userId) => ({
+        gameId: game.id,
+        userId,
         score: 0,
       }))
     );
+
+    return game.id;
   });
+
+  return gameId;
 }
 
 // ============================================
@@ -113,12 +115,12 @@ export function calculatePoints(
 // ============================================
 
 export async function submitAnswer(
-  roomId: string,
+  gameId: number,
   userId: number,
   answerIndex: number
 ): Promise<{ isCorrect: boolean; pointsAwarded: number }> {
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState || gameState.phase !== 'question') {
@@ -129,7 +131,7 @@ export async function submitAnswer(
   const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
 
   // Check if already answered
-  const existing = await findPlayerAnswer(roomId, userId, currentQuestionId);
+  const existing = await findPlayerAnswer(gameId, userId, currentQuestionId);
 
   if (existing) {
     throw new Error('Ya respondiste esta pregunta');
@@ -152,7 +154,7 @@ export async function submitAnswer(
   }
 
   // Un-shuffle the player's answer from display space back to original DB space
-  const permutation = getShufflePermutation(currentQuestionId, roomId);
+  const permutation = getShufflePermutation(currentQuestionId, gameId);
   const originalAnswerIndex = shuffledToOriginal(answerIndex, permutation);
 
   const isCorrect = originalAnswerIndex === question.correctIndex;
@@ -160,7 +162,7 @@ export async function submitAnswer(
 
   await db.transaction(async (tx) => {
     await tx.insert(playerAnswers).values({
-      roomId,
+      gameId,
       userId,
       questionId: currentQuestionId,
       answerIndex: originalAnswerIndex,
@@ -171,12 +173,12 @@ export async function submitAnswer(
       await tx
         .update(scores)
         .set({ score: sql`${scores.score} + ${pointsAwarded}`, updatedAt: new Date() })
-        .where(and(eq(scores.roomId, roomId), eq(scores.userId, userId)));
+        .where(and(eq(scores.gameId, gameId), eq(scores.userId, userId)));
     }
   });
 
   // Check if all players answered — if so, transition to summary
-  await checkAndTransitionToSummary(roomId);
+  await checkAndTransitionToSummary(gameId);
 
   return { isCorrect, pointsAwarded };
 }
@@ -185,9 +187,9 @@ export async function submitAnswer(
 // STATE RESOLUTION (LAZY EVALUATION)
 // ============================================
 
-async function checkAndTransitionToSummary(roomId: string): Promise<void> {
+async function checkAndTransitionToSummary(gameId: number): Promise<void> {
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState || gameState.phase !== 'question') return;
@@ -195,8 +197,8 @@ async function checkAndTransitionToSummary(roomId: string): Promise<void> {
   const questionOrder = gameState.questionOrder as number[];
   const currentQuestionId = questionOrder[gameState.currentQuestionIndex];
 
-  const participantTotal = await getParticipantCount(roomId);
-  const answerTotal = await getAnswerCount(roomId, currentQuestionId);
+  const participantTotal = await getPlayerCount(gameId);
+  const answerTotal = await getAnswerCount(gameId, currentQuestionId);
 
   if (answerTotal >= participantTotal) {
     await db
@@ -206,13 +208,13 @@ async function checkAndTransitionToSummary(roomId: string): Promise<void> {
         questionStartTime: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(gameStates.roomId, roomId));
+      .where(eq(gameStates.gameId, gameId));
   }
 }
 
-async function handleTimeExpiry(roomId: string): Promise<void> {
+async function handleTimeExpiry(gameId: number): Promise<void> {
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState || gameState.phase !== 'question') return;
@@ -230,27 +232,27 @@ async function handleTimeExpiry(roomId: string): Promise<void> {
       await tx
         .update(gameStates)
         .set({ phase: 'finished', updatedAt: new Date() })
-        .where(eq(gameStates.roomId, roomId));
+        .where(eq(gameStates.gameId, gameId));
       await tx
-        .update(rooms)
+        .update(games)
         .set({ status: 'finished' })
-        .where(eq(rooms.id, roomId));
+        .where(eq(games.id, gameId));
     });
     return;
   }
 
   // Get participants who haven't answered
   const participants = await db
-    .select({ userId: roomParticipants.userId })
-    .from(roomParticipants)
-    .where(eq(roomParticipants.roomId, roomId));
+    .select({ userId: gameParticipants.userId })
+    .from(gameParticipants)
+    .where(eq(gameParticipants.gameId, gameId));
 
   const answered = await db
     .select({ userId: playerAnswers.userId })
     .from(playerAnswers)
     .where(
       and(
-        eq(playerAnswers.roomId, roomId),
+        eq(playerAnswers.gameId, gameId),
         eq(playerAnswers.questionId, currentQuestionId)
       )
     );
@@ -263,7 +265,7 @@ async function handleTimeExpiry(roomId: string): Promise<void> {
     if (unanswered.length > 0) {
       await tx.insert(playerAnswers).values(
         unanswered.map((p) => ({
-          roomId,
+          gameId,
           userId: p.userId,
           questionId: currentQuestionId,
           answerIndex: null,
@@ -280,13 +282,13 @@ async function handleTimeExpiry(roomId: string): Promise<void> {
         questionStartTime: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(gameStates.roomId, roomId));
+      .where(eq(gameStates.gameId, gameId));
   });
 }
 
-async function handleSummaryExpiry(roomId: string): Promise<void> {
+async function handleSummaryExpiry(gameId: number): Promise<void> {
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState || gameState.phase !== 'summary') return;
@@ -304,12 +306,12 @@ async function handleSummaryExpiry(roomId: string): Promise<void> {
       await tx
         .update(gameStates)
         .set({ phase: 'finished', updatedAt: new Date() })
-        .where(eq(gameStates.roomId, roomId));
+        .where(eq(gameStates.gameId, gameId));
 
       await tx
-        .update(rooms)
+        .update(games)
         .set({ status: 'finished' })
-        .where(eq(rooms.id, roomId));
+        .where(eq(games.id, gameId));
     });
   } else {
     // Next question
@@ -321,7 +323,7 @@ async function handleSummaryExpiry(roomId: string): Promise<void> {
         questionStartTime: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(gameStates.roomId, roomId));
+      .where(eq(gameStates.gameId, gameId));
   }
 }
 
@@ -330,35 +332,26 @@ async function handleSummaryExpiry(roomId: string): Promise<void> {
 // ============================================
 
 export async function resolveGameState(
-  roomId: string,
+  gameId: number,
   userId: number
 ): Promise<GameStateResponse> {
   // Trigger any pending transitions
-  await handleTimeExpiry(roomId);
-  await handleSummaryExpiry(roomId);
+  await handleTimeExpiry(gameId);
+  await handleSummaryExpiry(gameId);
 
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState) {
     throw new Error('Juego no encontrado');
   }
 
-  const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, roomId),
-  });
-
-  if (!room) {
-    throw new Error('Sala no encontrada');
-  }
-
   const questionOrder = gameState.questionOrder as number[];
-  const leaderboard = await getLeaderboard(roomId);
+  const leaderboard = await getLeaderboard(gameId);
 
   const shared = {
-    roomId,
-    roomName: room.name,
+    gameId,
     currentQuestionIndex: gameState.currentQuestionIndex,
     totalQuestions: questionOrder.length,
     leaderboard,
@@ -372,7 +365,7 @@ export async function resolveGameState(
 
     if (!question) throw new Error('Pregunta no encontrada');
 
-    const permutation = getShufflePermutation(currentQuestionId, roomId);
+    const permutation = getShufflePermutation(currentQuestionId, gameId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -381,9 +374,9 @@ export async function resolveGameState(
       (GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS - elapsed) * 1000
     );
 
-    const existingAnswer = await findPlayerAnswer(roomId, userId, currentQuestionId);
-    const totalPlayers = await getParticipantCount(roomId);
-    const answeredCount = await getAnswerCount(roomId, currentQuestionId);
+    const existingAnswer = await findPlayerAnswer(gameId, userId, currentQuestionId);
+    const totalPlayers = await getPlayerCount(gameId);
+    const answeredCount = await getAnswerCount(gameId, currentQuestionId);
 
     return {
       ...shared,
@@ -413,7 +406,7 @@ export async function resolveGameState(
 
     if (!question) throw new Error('Pregunta no encontrada');
 
-    const permutation = getShufflePermutation(currentQuestionId, roomId);
+    const permutation = getShufflePermutation(currentQuestionId, gameId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -422,7 +415,7 @@ export async function resolveGameState(
       (GAME_CONFIG.SUMMARY_DISPLAY_SECONDS - elapsed) * 1000
     );
 
-    const answers = await getQuestionAnswersWithUsers(roomId, currentQuestionId);
+    const answers = await getQuestionAnswersWithUsers(gameId, currentQuestionId);
 
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,
@@ -459,29 +452,22 @@ export async function resolveGameState(
 // ============================================
 
 export async function resolveGameStateForAdmin(
-  roomId: string
+  gameId: number
 ): Promise<GameStateResponse> {
-  await handleTimeExpiry(roomId);
-  await handleSummaryExpiry(roomId);
+  await handleTimeExpiry(gameId);
+  await handleSummaryExpiry(gameId);
 
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState) throw new Error('Juego no encontrado');
 
-  const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, roomId),
-  });
-
-  if (!room) throw new Error('Sala no encontrada');
-
   const questionOrder = gameState.questionOrder as number[];
-  const leaderboard = await getLeaderboard(roomId);
+  const leaderboard = await getLeaderboard(gameId);
 
   const shared = {
-    roomId,
-    roomName: room.name,
+    gameId,
     currentQuestionIndex: gameState.currentQuestionIndex,
     totalQuestions: questionOrder.length,
     leaderboard,
@@ -495,7 +481,7 @@ export async function resolveGameStateForAdmin(
 
     if (!question) throw new Error('Pregunta no encontrada');
 
-    const permutation = getShufflePermutation(currentQuestionId, roomId);
+    const permutation = getShufflePermutation(currentQuestionId, gameId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -504,8 +490,8 @@ export async function resolveGameStateForAdmin(
       (GAME_CONFIG.QUESTION_TIME_LIMIT_SECONDS - elapsed) * 1000
     );
 
-    const totalPlayers = await getParticipantCount(roomId);
-    const answeredCount = await getAnswerCount(roomId, currentQuestionId);
+    const totalPlayers = await getPlayerCount(gameId);
+    const answeredCount = await getAnswerCount(gameId, currentQuestionId);
 
     return {
       ...shared,
@@ -533,7 +519,7 @@ export async function resolveGameStateForAdmin(
 
     if (!question) throw new Error('Pregunta no encontrada');
 
-    const permutation = getShufflePermutation(currentQuestionId, roomId);
+    const permutation = getShufflePermutation(currentQuestionId, gameId);
 
     const elapsed =
       (Date.now() - new Date(gameState.questionStartTime!).getTime()) / 1000;
@@ -542,7 +528,7 @@ export async function resolveGameStateForAdmin(
       (GAME_CONFIG.SUMMARY_DISPLAY_SECONDS - elapsed) * 1000
     );
 
-    const answers = await getQuestionAnswersWithUsers(roomId, currentQuestionId);
+    const answers = await getQuestionAnswersWithUsers(gameId, currentQuestionId);
 
     const playerResults: PlayerQuestionResult[] = answers.map((a) => ({
       userId: a.userId,
@@ -579,7 +565,7 @@ export async function resolveGameStateForAdmin(
 // ============================================
 
 export async function getLeaderboard(
-  roomId: string
+  gameId: number
 ): Promise<LeaderboardEntry[]> {
   const results = await db
     .select({
@@ -589,7 +575,7 @@ export async function getLeaderboard(
     })
     .from(scores)
     .innerJoin(users, eq(scores.userId, users.id))
-    .where(eq(scores.roomId, roomId))
+    .where(eq(scores.gameId, gameId))
     .orderBy(sql`${scores.score} DESC`);
 
   return results.map((r, i) => ({
@@ -604,15 +590,15 @@ export async function getLeaderboard(
 // GAME RESULTS
 // ============================================
 
-export async function getGameResults(roomId: string) {
+export async function getGameResults(gameId: number) {
   const gameState = await db.query.gameStates.findFirst({
-    where: eq(gameStates.roomId, roomId),
+    where: eq(gameStates.gameId, gameId),
   });
 
   if (!gameState) throw new Error('Juego no encontrado');
 
   const questionOrder = gameState.questionOrder as number[];
-  const leaderboard = await getLeaderboard(roomId);
+  const leaderboard = await getLeaderboard(gameId);
 
   // Get all questions for this game
   const gameQuestions = questionOrder.length > 0
@@ -633,13 +619,13 @@ export async function getGameResults(roomId: string) {
     })
     .from(playerAnswers)
     .innerJoin(users, eq(playerAnswers.userId, users.id))
-    .where(eq(playerAnswers.roomId, roomId));
+    .where(eq(playerAnswers.gameId, gameId));
 
   const questionsWithAnswers = questionOrder.map((qId, index) => {
     const q = gameQuestions.find((gq) => gq.id === qId);
     const qAnswers = allAnswers.filter((a) => a.questionId === qId);
 
-    const permutation = getShufflePermutation(qId, roomId);
+    const permutation = getShufflePermutation(qId, gameId);
 
     return {
       index,

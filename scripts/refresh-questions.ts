@@ -1,5 +1,5 @@
 import { db, questions } from '../lib/db';
-import { rooms } from '../lib/db/schema';
+import { games } from '../lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -56,13 +56,10 @@ async function refreshQuestions() {
   console.log(`Validated ${questionsData.length} questions from file`);
 
   // ── Step 2: Warn about active games ─────────────────────────────
-  const activeGames = await db.select().from(rooms).where(eq(rooms.status, 'playing'));
+  const activeGames = await db.select().from(games).where(eq(games.status, 'playing'));
 
   if (activeGames.length > 0) {
-    console.warn(`\nWARNING: ${activeGames.length} room(s) currently have active games:`);
-    for (const room of activeGames) {
-      console.warn(`  - Room "${room.name}" (${room.id})`);
-    }
+    console.warn(`\nWARNING: ${activeGames.length} game(s) currently active.`);
     console.warn('Deleting questions will affect these in-progress games!\n');
   }
 

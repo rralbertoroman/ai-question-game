@@ -4,13 +4,13 @@ import { useRouter } from 'next/navigation';
 import type { LeaderboardEntry } from '@/lib/game/types';
 
 interface Props {
-  roomId: string;
+  gameId: number;
   leaderboard: LeaderboardEntry[];
   currentUserId: number;
 }
 
 export default function FinishedPhase({
-  roomId,
+  gameId,
   leaderboard,
   currentUserId,
 }: Props) {
@@ -89,7 +89,7 @@ export default function FinishedPhase({
 
       <div className="flex gap-3 justify-center">
         <button
-          onClick={() => router.push(`/rooms/${roomId}/results`)}
+          onClick={() => router.push(`/results/${gameId}`)}
           className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors cursor-pointer"
         >
           Resultados Detallados
@@ -98,7 +98,7 @@ export default function FinishedPhase({
           onClick={() => router.push('/')}
           className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Volver a las Salas
+          Volver al Inicio
         </button>
       </div>
     </div>
