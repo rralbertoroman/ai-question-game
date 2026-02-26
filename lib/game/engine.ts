@@ -81,7 +81,8 @@ export async function getOnlinePlayers(): Promise<{ id: number; username: string
 // ============================================
 
 export async function initializeGame(playerIds: number[]): Promise<number> {
-  if (playerIds.length < 2) {
+  const uniquePlayerIds = [...new Set(playerIds)];
+  if (uniquePlayerIds.length < 2) {
     throw new Error('Se necesitan al menos 2 participantes para iniciar');
   }
 
@@ -91,7 +92,7 @@ export async function initializeGame(playerIds: number[]): Promise<number> {
     const [game] = await tx.insert(games).values({ status: 'playing' }).returning();
 
     await tx.insert(gameParticipants).values(
-      playerIds.map((userId) => ({ gameId: game.id, userId }))
+      uniquePlayerIds.map((userId) => ({ gameId: game.id, userId }))
     );
 
     await tx.insert(gameStates).values({
@@ -103,7 +104,7 @@ export async function initializeGame(playerIds: number[]): Promise<number> {
     });
 
     await tx.insert(scores).values(
-      playerIds.map((userId) => ({ gameId: game.id, userId, score: 0 }))
+      uniquePlayerIds.map((userId) => ({ gameId: game.id, userId, score: 0 }))
     );
 
     return game.id;

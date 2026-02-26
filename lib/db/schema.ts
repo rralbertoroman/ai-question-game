@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, boolean, integer, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, timestamp, boolean, integer, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ============================================
@@ -48,7 +48,7 @@ export const gameParticipants = pgTable('game_participants', {
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
 }, (table) => ({
-  gameUserIdx: index('game_participant_idx').on(table.gameId, table.userId),
+  gameUserIdx: uniqueIndex('game_participant_idx').on(table.gameId, table.userId),
 }));
 
 // ============================================
@@ -108,7 +108,7 @@ export const scores = pgTable('scores', {
   score: integer('score').notNull().default(0), // Store as integer (multiply by 10, e.g., 3.5 pts = 35)
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  gameUserScoreIdx: index('score_game_user_idx').on(table.gameId, table.userId),
+  gameUserScoreIdx: uniqueIndex('score_game_user_idx').on(table.gameId, table.userId),
 }));
 
 // ============================================
