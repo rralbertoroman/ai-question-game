@@ -66,14 +66,21 @@ async function refreshQuestions() {
     console.warn('Deleting questions will affect these in-progress games!\n');
   }
 
-  // ── Step 3: Delete all existing questions ───────────────────────
+  // ── Step 3: Delete all games (cascades to participants, states, answers, scores) ──
+  const gameCount = await db.select({ count: sql<number>`count(*)` }).from(games);
+  const deletedGames = Number(gameCount[0].count);
+
+  await db.delete(games);
+  console.log(`Deleted ${deletedGames} game(s) and all related data (participants, scores, answers, states)`);
+
+  // ── Step 4: Delete all existing questions ───────────────────────
   const existingCount = await db.select({ count: sql<number>`count(*)` }).from(questions);
   const deletedCount = Number(existingCount[0].count);
 
   await db.delete(questions);
   console.log(`Deleted ${deletedCount} existing questions`);
 
-  // ── Step 4: Insert all questions from JSON ──────────────────────
+  // ── Step 5: Insert all questions from JSON ──────────────────────
   const inserted = await db.insert(questions).values(
     questionsData.map((q) => ({
       questionText: q.question,
@@ -86,10 +93,11 @@ async function refreshQuestions() {
 
   console.log(`Inserted ${inserted.length} new questions`);
 
-  // ── Step 5: Print summary ───────────────────────────────────────
+  // ── Step 6: Print summary ───────────────────────────────────────
   console.log('\n--- Summary ---');
-  console.log(`  Deleted:  ${deletedCount}`);
-  console.log(`  Inserted: ${inserted.length}`);
+  console.log(`  Games deleted:     ${deletedGames}`);
+  console.log(`  Questions deleted: ${deletedCount}`);
+  console.log(`  Questions added:   ${inserted.length}`);
 
   const categoryCounts = questionsData.reduce((acc, q) => {
     acc[q.category] = (acc[q.category] || 0) + 1;
