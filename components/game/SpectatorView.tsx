@@ -2,6 +2,7 @@
 
 import { GAME_CONFIG } from '@/lib/game/config';
 import SummaryPhase from './SummaryPhase';
+import FinishedPhase from './FinishedPhase';
 import Leaderboard from './Leaderboard';
 import ProgressBar from './ProgressBar';
 import TimerDisplay from './TimerDisplay';
@@ -91,15 +92,13 @@ export default function SpectatorView({ gameState }: Props) {
         />
       )}
 
-      {/* Finished - show final leaderboard */}
+      {/* Finished — show comprehensive scoreboard */}
       {gameState.phase === 'finished' && (
-        <div className="text-center py-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Juego Finalizado</h2>
-          <Leaderboard
-            entries={gameState.leaderboard}
-            currentUserId={-1}
-          />
-        </div>
+        <FinishedPhase
+          gameId={gameState.gameId}
+          leaderboard={gameState.leaderboard}
+          currentUserId={-1}
+        />
       )}
 
       {/* Leaderboard during game */}

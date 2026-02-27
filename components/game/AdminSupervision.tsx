@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GAME_CONFIG } from '@/lib/game/config';
 import { useGameSSE } from '@/components/hooks/useGameSSE';
 import SummaryPhase from './SummaryPhase';
+import FinishedPhase from './FinishedPhase';
 import Leaderboard from './Leaderboard';
 import ProgressBar from './ProgressBar';
 import TimerDisplay from './TimerDisplay';
@@ -25,13 +25,6 @@ export default function AdminSupervision({ gameId }: Props) {
   const router = useRouter();
 
   const { gameState } = useGameSSE({ enabled: true });
-
-  // Redirect to results when game finishes
-  useEffect(() => {
-    if (gameState?.phase === 'finished') {
-      router.push(`/results/${gameId}`);
-    }
-  }, [gameState?.phase, gameId, router]);
 
   if (!gameState || gameState.phase === 'idle') {
     return (
@@ -128,6 +121,15 @@ export default function AdminSupervision({ gameId }: Props) {
         {(gameState.phase === 'question' || gameState.phase === 'summary') && (
           <Leaderboard
             entries={gameState.leaderboard}
+            currentUserId={-1}
+          />
+        )}
+
+        {/* Finished — show comprehensive scoreboard */}
+        {gameState.phase === 'finished' && (
+          <FinishedPhase
+            gameId={gameId}
+            leaderboard={gameState.leaderboard}
             currentUserId={-1}
           />
         )}

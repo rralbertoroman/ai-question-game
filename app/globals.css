@@ -254,6 +254,23 @@ body {
 .confetti-piece:nth-child(7)  { left: 78%; background: #00ffff; animation: confettiFall 3.1s linear forwards 0.5s; }
 .confetti-piece:nth-child(8)  { left: 88%; background: #06b6d4; animation: confettiFall 2.9s linear forwards 0.7s; border-radius: 50%; }
 
+/* --- Collapsible question cards --- */
+.question-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.question-collapse.expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.question-collapse > div {
+  overflow: hidden;
+}
+
 /* --- Progress bar shimmer --- */
 @keyframes progressShimmer {
   0% { background-position: -200% 0; }
