@@ -15,6 +15,7 @@ export const GET = apiHandler(
     const userId = ctx.user!.id;
     const request = ctx.request!;
     let lastJson = '';
+    let lastGameId: number | null = null;
     let stopped = false;
 
     const stream = new ReadableStream({
@@ -30,16 +31,31 @@ export const GET = apiHandler(
             const activeGame = await getActiveGame();
 
             if (!activeGame) {
-              // No active game — send idle state
-              const idle: IdleState = { phase: 'idle' };
-              const json = JSON.stringify(idle);
+              if (lastGameId) {
+                // Game we were tracking just ended — send its final (finished) state
+                // before transitioning to idle, so the client sees the scoreboard
+                const gameState = await resolveGameState(lastGameId, userId);
+                const json = JSON.stringify(gameState);
 
-              if (json !== lastJson) {
-                lastJson = json;
-                const message: SSEMessage = { type: 'state', data: idle };
-                controller.enqueue(encoder.encode(formatSSE(message)));
+                if (json !== lastJson) {
+                  lastJson = json;
+                  const message: SSEMessage = { type: 'state', data: gameState };
+                  controller.enqueue(encoder.encode(formatSSE(message)));
+                }
+                lastGameId = null;
+              } else {
+                // No active game and final state already sent — send idle
+                const idle: IdleState = { phase: 'idle' };
+                const json = JSON.stringify(idle);
+
+                if (json !== lastJson) {
+                  lastJson = json;
+                  const message: SSEMessage = { type: 'state', data: idle };
+                  controller.enqueue(encoder.encode(formatSSE(message)));
+                }
               }
             } else {
+              lastGameId = activeGame.id;
               // Active game — resolve state for this user
               const gameState = await resolveGameState(activeGame.id, userId);
               const json = JSON.stringify(gameState);
@@ -48,11 +64,6 @@ export const GET = apiHandler(
                 lastJson = json;
                 const message: SSEMessage = { type: 'state', data: gameState };
                 controller.enqueue(encoder.encode(formatSSE(message)));
-              }
-
-              // After sending finished, reset lastJson so we can detect idle next
-              if (gameState.phase === 'finished') {
-                lastJson = '';
               }
             }
 

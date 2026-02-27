@@ -26,7 +26,13 @@ export function useGameSSE({
       const res = await fetch('/api/game/state');
       if (res.ok) {
         const data: GameStateResponse = await res.json();
-        setGameState(data);
+        setGameState((prev) => {
+          // Don't let idle overwrite an active game — user must manually leave scoreboard
+          if (prev?.phase === 'finished' && data.phase === 'idle') {
+            return prev;
+          }
+          return data;
+        });
         setError('');
       }
     } catch {
@@ -51,7 +57,13 @@ export function useGameSSE({
       try {
         const message: SSEMessage = JSON.parse(event.data);
         if (message.type === 'state') {
-          setGameState(message.data);
+          setGameState((prev) => {
+            // Don't let idle overwrite an active game — user must manually leave scoreboard
+            if (prev?.phase === 'finished' && message.data.phase === 'idle') {
+              return prev;
+            }
+            return message.data;
+          });
           setError('');
         } else if (message.type === 'error') {
           setError(message.error);
